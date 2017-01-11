@@ -71,6 +71,7 @@ class Test_can_read_a_spreadsheet(Test_Do_Setups):
     data_generator = file_utilities.spreadsheet_keyvalue_generator(perm_spreadsheets_directory_path)
     first_line = data_generator.__next__()
     self.assertTrue('table' in first_line.keys())
+    self.assertTrue(first_line['table'] == 'person')
 
 
 
