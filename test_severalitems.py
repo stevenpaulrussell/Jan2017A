@@ -65,7 +65,7 @@ class Test_get_directories_and_db_spec_from_yaml(Test_Do_Setups):
 
 
 class Test_can_read_a_spreadsheet(Test_Do_Setups):
-  def test_can_get_a_generator(self):
+  def test_can_get_a_generator_from_good_sheet(self):
     mydirectory = file_utilities.read_yaml(test_yaml_path)
     perm_spreadsheets_directory_path = mydirectory['perm_spreadsheets']
     data_generator = file_utilities.spreadsheet_keyvalue_generator(perm_spreadsheets_directory_path)
