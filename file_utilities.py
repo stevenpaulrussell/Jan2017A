@@ -1,12 +1,8 @@
-import yaml
 import os
+import collections
 
+import yaml
 
-
-
-
-def read_directory(directory_path):
-    return {}
 
 
 def read_yaml(yaml_path):
@@ -17,6 +13,11 @@ def read_yaml(yaml_path):
 
 def write_yaml(data, yaml_path):
     yaml.safe_dump(data, yaml_path)
+
+
+def spreadsheet_keyvalue_generator(spreadsheet_path):
+    print(spreadsheet_path)
+
 
 
 

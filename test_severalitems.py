@@ -1,9 +1,7 @@
 import unittest
 import os
 
-
 import file_utilities
-
 
 local_path = '/Users/steve/'
 test_source_directory = 'TestItemsForJan2017A'
@@ -28,9 +26,10 @@ class Test_test_readiness(unittest.TestCase):
 
 class Test_Do_Setups(unittest.TestCase):
   """Super class for tests in order to not duplicate setup and teardown functions"""
+
   def setUp(self):
-    with open(test_yaml_path,'w') as fp:
-        file_utilities.write_yaml(yaml_test_dictionary, fp)
+    with open(test_yaml_path, 'w') as fp:
+      file_utilities.write_yaml(yaml_test_dictionary, fp)
 
   def tearDown(self):
     os.remove(test_yaml_path)
@@ -65,9 +64,13 @@ class Test_get_directories_and_db_spec_from_yaml(Test_Do_Setups):
     self.assertEqual(open_spreadsheets, 3)
 
 
-
-
-
+class Test_can_read_a_spreadsheet(Test_Do_Setups):
+  def test_can_get_a_generator(self):
+    mydirectory = file_utilities.read_yaml(test_yaml_path)
+    perm_spreadsheets_directory_path = mydirectory['perm_spreadsheets']
+    data_generator = file_utilities.spreadsheet_keyvalue_generator(perm_spreadsheets_directory_path)
+    first_line = data_generator.__next__()
+    self.assertTrue('table' in first_line.keys())
 
 
 
