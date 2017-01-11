@@ -5,8 +5,8 @@ import os
 
 
 
-def read_directory(loc='/Users/steve/jan2017A'):
-    return {'db_spec': None, 'open_spreadsheets': None, 'mirrored_spreadsheets': None}
+def read_directory(directory_path):
+    return {}
 
 
 def read_yaml(yaml_path):
