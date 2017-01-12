@@ -70,14 +70,15 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
         write_a_row(gen_number + 2, keyvalues.values())
     workbook.close()
 
-def gen_by_filtering_from_gen_list(gen_list, filter):
-    for a_gen in gen_list:
-        for item in a_gen():
-            msg = filter(item)
-            if msg:
-                raise InputSpreadsheetException(msg)
-            else:
-                yield item
+
+def gen_by_filtering_from_gen_list(a_gen, filter, callable):
+    for item in a_gen:
+        msg = filter(item)
+        if msg:
+            callable(msg)
+            break
+        else:
+            yield item
 
 
 

@@ -1,5 +1,6 @@
 import unittest
 import os
+from itertools import chain
 
 import file_utilities
 
@@ -155,21 +156,21 @@ class TestWritingToAn_xlsx(Test_Do_Setups):
     def listB():
         for item in mylistB:
             yield item
-    filtered_gen = file_utilities.gen_by_filtering_from_gen_list([listA, listB], complain_about_2)
-    filtrate = []
-    for raw in sum_list:
-        try:
-            result = filtered_gen.__next__()
-            filtrate.append(result)
-        except file_utilities.InputSpreadsheetException as e:
-            self.assertIn('Do not accept any 2s!', e.reasons[0])
-            break
+    def msg_print(msg):
+        self.msg = msg
+    filtered_gen = file_utilities.gen_by_filtering_from_gen_list(chain(listA(), listB()), complain_about_2, msg_print)
+    filtrate = [result for result in filtered_gen]
     self.assertEqual(filtrate, sum_list[:6])
+    self.assertEqual(self.msg, 'Do not accept any 2s!')
 
 
-  def test_use_open_to_update_mirror_on_test(self):
-    self.assertFalse(42)
-
+  def xtest_gen_by_filtering_from_gen_list_to_make_excel_file(self):
+    def stop_last_name_moss(aline):
+        if aline['last'].lower() == 'moss':
+            return 'No {} allowed'.format(aline['last'])
+    source_gen = file_utilities.spreadsheet_keyvalue_generator(test_person_table_example_path)
+    filtered_gen = file_utilities.gen_by_filtering_from_gen_list([source_gen], stop_last_name_moss())
+    file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(filtered_gen, self.test_write_path)
 
 
 
