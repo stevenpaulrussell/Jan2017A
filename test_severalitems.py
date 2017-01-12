@@ -13,6 +13,8 @@ various_problems_spreadsheet_test_filename = 'various_problems_spreadsheet_test.
 empty_spreadsheet_test_filename = 'empty_spreadsheet_test.xls'
 
 perm_spreadsheets_filename = 'perm_spreadsheets_test.xlsx'
+person_table_example = 'person_from_TutorsAugust2015.xlsx'
+
 
 test_yaml_path = os.path.join(local_path, test_yaml_filename)
 test_source_path = os.path.join(local_path, test_source_directory)
@@ -22,6 +24,7 @@ test_header_only_spreadsheet_path = os.path.join(test_source_path, header_only_s
 test_various_problems_spreadsheets_path = os.path.join(test_source_path, various_problems_spreadsheet_test_filename)
 test_empty_spreadsheet_path = os.path.join(test_source_path, empty_spreadsheet_test_filename)
 test_perm_spreadsheets_path = os.path.join(test_source_path, perm_spreadsheets_filename)
+test_person_table_example_path = os.path.join(test_source_path, person_table_example)
 
 
 yaml_test_dictionary = {'perm_spreadsheets': test_perm_spreadsheets_path,
@@ -38,6 +41,7 @@ class Test_test_readiness(unittest.TestCase):
     self.assertTrue(os.path.exists(test_various_problems_spreadsheets_path))
     self.assertTrue(os.path.exists(test_empty_spreadsheet_path))
     self.assertTrue(os.path.exists(test_perm_spreadsheets_path))
+    self.assertTrue(os.path.exists(test_person_table_example_path))
 
 
 class Test_Do_Setups(unittest.TestCase):
@@ -120,22 +124,53 @@ class Test_can_read_a_spreadsheet(Test_Do_Setups):
     self.assertTrue(first_line['table'] == 'person')
 
 class TestWritingToAn_xlsx(Test_Do_Setups):
+  def setUp(self):
+    super().setUp()
+    self.data_generator = file_utilities.spreadsheet_keyvalue_generator(test_person_table_example_path)
+    self.test_write_path = os.path.join(test_source_path, 'TEST_WRITE.xlsx')
+
+  def tearDown(self):
+    super().tearDown()
+    if os.path.exists(self.test_write_path):
+      os.remove(self.test_write_path)
+
   def test_copy(self):
-    mydirectory = file_utilities.read_yaml(test_yaml_path)
-    data_generator = file_utilities.spreadsheet_keyvalue_generator(test_various_problems_spreadsheets_path)
-    test_write_path = os.path.join(test_source_path, 'TEST_WRITE.xlsx')
-    file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(data_generator, test_write_path)
-    original_gen = file_utilities.spreadsheet_keyvalue_generator(test_various_problems_spreadsheets_path)
-    copy_gen = file_utilities.spreadsheet_keyvalue_generator(test_various_problems_spreadsheets_path)
+    file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.data_generator, self.test_write_path)
+    original_gen = file_utilities.spreadsheet_keyvalue_generator(test_person_table_example_path)
+    copy_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_write_path)
     for source_item in original_gen:
       copy_item = copy_gen.__next__()
       self.assertEqual(source_item, copy_item)
 
-  def test_compare_mirror_with_open_raise_exception_on_problem(self):
-    self.assertFalse(42)
+  def test_gen_by_filtering_from_gen_list(self):
+    mylistA = ['a', 'b', None]
+    mylistB = [1, {}, 'string', 2, 3]
+    sum_list = mylistA + mylistB
+    def complain_about_2(item):
+        if item == 2:
+            return 'Do not accept any 2s!'
+    def listA():
+        for item in mylistA:
+            yield item
+    def listB():
+        for item in mylistB:
+            yield item
+    filtered_gen = file_utilities.gen_by_filtering_from_gen_list([listA, listB], complain_about_2)
+    filtrate = []
+    for raw in sum_list:
+        try:
+            result = filtered_gen.__next__()
+            filtrate.append(result)
+        except file_utilities.InputSpreadsheetException as e:
+            self.assertIn('Do not accept any 2s!', e.reasons[0])
+            break
+    self.assertEqual(filtrate, sum_list[:6])
+
 
   def test_use_open_to_update_mirror_on_test(self):
     self.assertFalse(42)
+
+
 
 
 
