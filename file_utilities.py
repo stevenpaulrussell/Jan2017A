@@ -3,12 +3,14 @@ import collections
 
 import yaml
 import xlrd
+import xlsxwriter
 
 
 class InputSpreadsheetException(Exception):
     def __init__(self, *args, **kwds):
         super().__init__(args, kwds)
         self.reasons = args
+
 
 def read_yaml(yaml_path):
     with open(yaml_path,'r') as fp:
@@ -47,19 +49,29 @@ def spreadsheet_keyvalue_generator(spreadsheet_path):
         arow = xsheet.row_values(row_number)
         if any(arow):
             cleaned_row = [excel_item_cleaner(item) for item in arow]
-            yield dict(zip(column_headers, cleaned_row))
+            yield collections.OrderedDict(zip(column_headers, cleaned_row))
     xbook.release_resources()
 
 
-def write_lists_to_excel(filepath, list_of_lists):
-    assert filepath[-5:] == '.xlsx'
-    workbook = xlsxwriter.Workbook(filepath)
+def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
+    assert dest_file_path[-5:] == '.xlsx'
+    workbook = xlsxwriter.Workbook(dest_file_path)
     centerwrapformat = workbook.add_format({'text_wrap': True, 'center_across': True})
     worksheet = workbook.add_worksheet()
-    for arow, alist in enumerate(list_of_lists):
+    def write_a_row(row, alist):
         for col, item in enumerate(alist):
-            worksheet.write(arow, col, item, centerwrapformat)
+            if item == None:
+                item = ' '
+            worksheet.write(row, col, item, centerwrapformat)
+    keyvalues = gen_of_dicts.__next__()
+    write_a_row(0, keyvalues.keys())
+    write_a_row(1, keyvalues.values())
+    for gen_number, keyvalues in enumerate(gen_of_dicts):
+        write_a_row(gen_number + 2, keyvalues.values())
     workbook.close()
+
+
+
 
 
 

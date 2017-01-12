@@ -12,7 +12,7 @@ header_only_spreadsheet_test_filename = 'header_only_spreadsheet_test.xls'
 various_problems_spreadsheet_test_filename = 'various_problems_spreadsheet_test.xls'
 empty_spreadsheet_test_filename = 'empty_spreadsheet_test.xls'
 
-perm_spreadsheets_filename = 'perm_spreadsheets_test.xls'
+perm_spreadsheets_filename = 'perm_spreadsheets_test.xlsx'
 
 test_yaml_path = os.path.join(local_path, test_yaml_filename)
 test_source_path = os.path.join(local_path, test_source_directory)
@@ -118,6 +118,19 @@ class Test_can_read_a_spreadsheet(Test_Do_Setups):
     first_line = data_generator.__next__()
     self.assertTrue('table' in first_line.keys())
     self.assertTrue(first_line['table'] == 'person')
+
+class TestWritingToAn_xlsx(Test_Do_Setups):
+  def test_copy(self):
+    mydirectory = file_utilities.read_yaml(test_yaml_path)
+    data_generator = file_utilities.spreadsheet_keyvalue_generator(test_various_problems_spreadsheets_path)
+    test_write_path = os.path.join(test_source_path, 'TEST_WRITE.xlsx')
+    file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(data_generator, test_write_path)
+    original_gen = file_utilities.spreadsheet_keyvalue_generator(test_various_problems_spreadsheets_path)
+    copy_gen = file_utilities.spreadsheet_keyvalue_generator(test_various_problems_spreadsheets_path)
+    for source_item in original_gen:
+      copy_item = copy_gen.__next__()
+      self.assertEqual(source_item, copy_item)
+
 
 
 
