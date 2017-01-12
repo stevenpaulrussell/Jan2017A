@@ -1,4 +1,3 @@
-import os
 import collections
 
 import yaml
@@ -13,7 +12,7 @@ class InputSpreadsheetException(Exception):
 
 
 def read_yaml(yaml_path):
-    with open(yaml_path,'r') as fp:
+    with open(yaml_path, 'r') as fp:
         data = yaml.safe_load(fp)
     return data
 
@@ -58,11 +57,13 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
     workbook = xlsxwriter.Workbook(dest_file_path)
     centerwrapformat = workbook.add_format({'text_wrap': True, 'center_across': True})
     worksheet = workbook.add_worksheet()
+
     def write_a_row(row, alist):
         for col, item in enumerate(alist):
-            if item == None:
+            if item is None:
                 item = ' '
             worksheet.write(row, col, item, centerwrapformat)
+            
     keyvalues = gen_of_dicts.__next__()
     write_a_row(0, keyvalues.keys())
     write_a_row(1, keyvalues.values())
@@ -71,11 +72,11 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
     workbook.close()
 
 
-def gen_by_filtering_from_gen_list(a_gen, filter, callable=lambda msg: 1):
+def gen_by_filtering_from_gen_list(a_gen, checker, action=lambda msg: 1):
     for item in a_gen:
-        msg = filter(item)
+        msg = checker(item)
         if msg:
-            callable(msg)
+            action(msg)
             break
         else:
             yield item
