@@ -5,6 +5,10 @@ import yaml
 import xlrd
 
 
+class InputSpreadsheetException(Exception):
+    def __init__(self, *args, **kwds):
+        super().__init__(args, kwds)
+        self.reasons = args
 
 def read_yaml(yaml_path):
     with open(yaml_path,'r') as fp:
@@ -31,10 +35,14 @@ def spreadsheet_keyvalue_generator(spreadsheet_path):
     xbook = xlrd.open_workbook(spreadsheet_path)
     xsheet = xbook.sheet_by_index(0)
     if xsheet.nrows == 0:
-        return
-    column_headers = xsheet.row_values(0)
+        raise InputSpreadsheetException('<{}> spreadsheet is empty'.format(spreadsheet_path))
+    column_headers = [excel_item_cleaner(item) for item in xsheet.row_values(0)]
+    if not all(column_headers):
+        msg1 = '<{}> spreadsheet has at least one empty header column.'.format(spreadsheet_path)
+        msg2 = 'seeing (cleaned) headers: {} '.format(column_headers)
+        raise InputSpreadsheetException(msg1, msg2)
     if xsheet.nrows == 1:
-        return dict(zip(column_headers, [None]*len(column_headers)))
+        raise InputSpreadsheetException('<{}> spreadsheet is only headers'.format(spreadsheet_path))
     for row_number in range(1, xsheet.nrows):
         arow = xsheet.row_values(row_number)
         if any(arow):

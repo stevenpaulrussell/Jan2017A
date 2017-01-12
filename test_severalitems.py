@@ -6,11 +6,23 @@ import file_utilities
 local_path = '/Users/steve/'
 test_source_directory = 'TestItemsForJan2017A'
 test_yaml_filename = 'test_yaml_file'
+
+bad_header_spreadsheet_test_filename = 'bad_header_spreadsheet_test.xls'
+header_only_spreadsheet_test_filename = 'header_only_spreadsheet_test.xls'
+various_problems_spreadsheet_test_filename = 'various_problems_spreadsheet_test.xls'
+empty_spreadsheet_test_filename = 'empty_spreadsheet_test.xls'
+
 perm_spreadsheets_filename = 'perm_spreadsheets_test.xls'
 
 test_yaml_path = os.path.join(local_path, test_yaml_filename)
 test_source_path = os.path.join(local_path, test_source_directory)
+
+test_bad_header_spreadsheet_path = os.path.join(test_source_path, bad_header_spreadsheet_test_filename)
+test_header_only_spreadsheet_path = os.path.join(test_source_path, header_only_spreadsheet_test_filename)
+test_various_problems_spreadsheets_path = os.path.join(test_source_path, various_problems_spreadsheet_test_filename)
+test_empty_spreadsheet_path = os.path.join(test_source_path, empty_spreadsheet_test_filename)
 test_perm_spreadsheets_path = os.path.join(test_source_path, perm_spreadsheets_filename)
+
 
 yaml_test_dictionary = {'perm_spreadsheets': test_perm_spreadsheets_path,
                         'db_spec': 1,
@@ -21,12 +33,15 @@ yaml_test_dictionary = {'perm_spreadsheets': test_perm_spreadsheets_path,
 class Test_test_readiness(unittest.TestCase):
   def test_test_source_path(self):
     self.assertTrue(os.path.exists(test_source_path))
+    self.assertTrue(os.path.exists(test_bad_header_spreadsheet_path))
+    self.assertTrue(os.path.exists(test_header_only_spreadsheet_path))
+    self.assertTrue(os.path.exists(test_various_problems_spreadsheets_path))
+    self.assertTrue(os.path.exists(test_empty_spreadsheet_path))
     self.assertTrue(os.path.exists(test_perm_spreadsheets_path))
 
 
 class Test_Do_Setups(unittest.TestCase):
   """Super class for tests in order to not duplicate setup and teardown functions"""
-
   def setUp(self):
     with open(test_yaml_path, 'w') as fp:
       file_utilities.write_yaml(yaml_test_dictionary, fp)
@@ -65,7 +80,38 @@ class Test_get_directories_and_db_spec_from_yaml(Test_Do_Setups):
 
 
 class Test_can_read_a_spreadsheet(Test_Do_Setups):
-  def test_can_get_a_generator_from_good_sheet(self):
+  def test_various_problems_sheet(self):
+    data_generator = file_utilities.spreadsheet_keyvalue_generator(test_various_problems_spreadsheets_path)
+    first_line = data_generator.__next__()
+    self.assertEqual(first_line['spaces_in_middle_and_end'], 'the header    and this have    spaces')
+    self.assertEqual(first_line['spaces_at_end_only'], 'spaces')
+    self.assertEqual(first_line['empty string'], None)
+    self.assertEqual(first_line['5 as float'], 5)
+    second_line = data_generator.__next__()
+    self.assertEqual(second_line['spaces_in_middle_and_end'], 'this comes after empty line')
+    self.assertEqual(second_line['spaces_at_end_only'], None)
+    self.assertEqual(second_line['empty string'], None)
+    self.assertEqual(second_line['5 as float'], None)
+
+  def test_bad_header_sheet(self):
+    data_generator = file_utilities.spreadsheet_keyvalue_generator(test_bad_header_spreadsheet_path)
+    with self.assertRaises(file_utilities.InputSpreadsheetException) as context:
+      data_generator.__next__()
+    self.assertIn('has at least one empty header column', context.exception.reasons[0])
+
+  def test_header_only_sheet(self):
+    data_generator = file_utilities.spreadsheet_keyvalue_generator(test_header_only_spreadsheet_path)
+    with self.assertRaises(file_utilities.InputSpreadsheetException) as context:
+      data_generator.__next__()
+    self.assertIn('spreadsheet is only headers', context.exception.reasons[0])
+
+  def test_empty_spreadsheet_sheet(self):
+    with self.assertRaises(file_utilities.InputSpreadsheetException) as context:
+      data_generator = file_utilities.spreadsheet_keyvalue_generator(test_empty_spreadsheet_path)
+      data_generator.__next__()
+    self.assertIn('spreadsheet is empty', context.exception.reasons[0])
+
+  def test_can_get_a_generator_from_good_sheet_and_yaml(self):
     mydirectory = file_utilities.read_yaml(test_yaml_path)
     perm_spreadsheets_directory_path = mydirectory['perm_spreadsheets']
     data_generator = file_utilities.spreadsheet_keyvalue_generator(perm_spreadsheets_directory_path)
