@@ -131,6 +131,12 @@ class TestWritingToAn_xlsx(Test_Do_Setups):
       copy_item = copy_gen.__next__()
       self.assertEqual(source_item, copy_item)
 
+  def test_compare_mirror_with_open_raise_exception_on_problem(self):
+    self.assertFalse(42)
+
+  def test_use_open_to_update_mirror_on_test(self):
+    self.assertFalse(42)
+
 
 
 
