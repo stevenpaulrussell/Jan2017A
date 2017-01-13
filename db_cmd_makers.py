@@ -2,10 +2,13 @@ from collections import OrderedDict
 
 
 def extract_sql_table_cmds(line_generator):
+    current_table = None
     sql_tables = OrderedDict()
     for aline in line_generator:
         tablename = aline['table name']
         if tablename:
+            if current_table:
+                current_table.inspect_for_error()
             sql_tables[tablename] = current_table = SQL_Table(tablename)
         else:
             current_table.add_parameter(aline)
@@ -51,6 +54,9 @@ class SQL_Table(object):
         else:
             print('Problem in building table {} with line <{}>'.format(self.tablename, aline))
             print(aline['type'], '\n')
+
+    def inspect_for_error(self):
+        print('Debug... am in SQL_Table.inspect_for_errors for table "{}"'.format(self.tablename))
 
     @property
     def insert_cmdstring(self):
