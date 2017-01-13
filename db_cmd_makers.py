@@ -60,36 +60,29 @@ class SQL_Table(object):
 
     @property
     def insert_cmdstring(self):
-        l1 = ', '.join(self.column_names)
-        l2 = '%({})s, '.format(self.column_names[0])
+        firstline = 'INSERT INTO {}'.format(self.tablename)
+        line_per_column = ', '.join(self.column_names)
+        lastline = '%({})s, '.format(self.column_names[0])
         for aname in self.column_names[1:-1]:
-            l2 = l2 + '%({})s, '.format(aname)
-        l2 = l2 + '%({})s'.format(self.column_names[-1])
-        lead = 'INSERT INTO {}'.format(self.tablename)
-        cmdstring = '{}\n\t({})\nVALUES\n\t({})'.format(lead, l1, l2)
-        return cmdstring
+            lastline += '%({})s, '.format(aname)
+        lastline += '%({})s'.format(self.column_names[-1])
+        return '{}\n\t({})\nVALUES\n\t({})'.format(firstline, line_per_column, lastline)
 
     @property
     def createtable_cmdstring(self):
-        if not self.primary_key_contraint:
-            msg = 'Table with name {} missing PK to get PRIMARY KEY'.format(self.tablename)
-            print(msg)
-        lead = 'CREATE TABLE {}\n\t(\n'.format(self.tablename)
-        datastring = ',\n'.join(self.data_items)
-        firstpart = lead + datastring + ',\n' + self.primary_key_contraint
-        tail = '\n\t)'
+        firstline = 'CREATE TABLE {}\n\t(\n'.format(self.tablename)
+        line_per_column = ',\n'.join(self.data_items)
+        essentials = firstline + line_per_column + ',\n' + self.primary_key_contraint
         if self.constraints:
-            return firstpart + ',\n\t' + ',\n\t'.join(self.constraints) + tail
+            line_per_constraint = ',\n\t'.join(self.constraints)
+            return essentials + ',\n\t' + line_per_constraint + '\n\t)'
         else:
-            return firstpart + tail
+            return essentials + '\n\t)'
 
     @property
     # So that each table also is a report -- make the right query string
     def create_query_cmd_string(self):
-        query_string = 'SELECT '
-        query_string += ', '.join(self.column_names)
-        query_string += '\n\tFROM {}'.format(self.tablename)
-        return query_string
+        return 'SELECT ' + ', '.join(self.column_names) + '\n\tFROM {}'.format(self.tablename)
 
 
 
