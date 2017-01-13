@@ -63,7 +63,7 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
             if item is None:
                 item = ' '
             worksheet.write(row, col, item, centerwrapformat)
-            
+
     keyvalues = gen_of_dicts.__next__()
     write_a_row(0, keyvalues.keys())
     write_a_row(1, keyvalues.values())

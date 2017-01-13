@@ -15,6 +15,7 @@ empty_spreadsheet_test_filename = 'empty_spreadsheet_test.xls'
 
 perm_spreadsheets_filename = 'perm_spreadsheets_test.xlsx'
 person_table_example = 'person_from_TutorsAugust2015.xlsx'
+db_template = 'sass0_master2.xls'
 
 
 test_yaml_path = os.path.join(local_path, test_yaml_filename)
@@ -26,6 +27,7 @@ test_various_problems_spreadsheets_path = os.path.join(test_source_path, various
 test_empty_spreadsheet_path = os.path.join(test_source_path, empty_spreadsheet_test_filename)
 test_perm_spreadsheets_path = os.path.join(test_source_path, perm_spreadsheets_filename)
 test_person_table_example_path = os.path.join(test_source_path, person_table_example)
+test_db_template_path = os.path.join(test_source_path, db_template)
 
 yaml_test_dictionary = {'perm_spreadsheets': test_perm_spreadsheets_path,
                         'db_spec': 1,
@@ -42,6 +44,7 @@ class Test_Test_Readiness(unittest.TestCase):
         self.assertTrue(os.path.exists(test_empty_spreadsheet_path))
         self.assertTrue(os.path.exists(test_perm_spreadsheets_path))
         self.assertTrue(os.path.exists(test_person_table_example_path))
+        self.assertTrue(os.path.exists(test_db_template_path))
 
 
 class Test_Do_Setups(unittest.TestCase):
@@ -175,7 +178,7 @@ class TestWritingToAn_xlsx(Test_Do_Setups):
         def stop_last_name_moss(aline):
             if aline['last'].lower() == 'moss':
                 return 'No {} allowed'.format(aline['last'])
-            
+
         source_gen = file_utilities.spreadsheet_keyvalue_generator(test_person_table_example_path)
         filtered_gen = file_utilities.gen_by_filtering_from_gen_list(source_gen, stop_last_name_moss, msg_store)
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(filtered_gen, self.test_write_path)
@@ -183,6 +186,19 @@ class TestWritingToAn_xlsx(Test_Do_Setups):
         contents = [copy_item for copy_item in copy_gen]
         self.assertEqual(len(contents), 5)
         self.assertEqual(self.msg, 'No Moss allowed')
+
+
+class TestWorkingWith_DB_Template(unittest.TestCase):
+    def test_smoke_test_of_template(self):
+        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(test_db_template_path)
+        first_line = template_line_gen.__next__()
+        self.assertIn('table name', first_line)
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
