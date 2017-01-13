@@ -20,34 +20,37 @@ class SQL_Table(object):
         self.constraints = []
 
     def add_parameter(self, aline):
-            item_name = aline['item name']
-            supplement = aline['supplemental strings'] or ''
-            if aline['type'] == 'PK':
-                self.primary_key_contraint = '\tCONSTRAINT {} PRIMARY KEY {}'.format(item_name, supplement)
-            elif aline['type'] == 'FK':
-                self.constraints.append('CONSTRAINT {} FOREIGN KEY {}'.format(item_name, supplement))
-            elif aline['type'] == 'ser':
-                self.add_data_item(item_name, 'SERIAL', supplement)
-            elif aline['type'] == 'int':
-                self.add_data_item(item_name, 'INT', supplement)
-            elif aline['type'] == 'var':
-                self.add_data_item(item_name, 'VARCHAR(80)', supplement)
-            elif aline['type'] == 'text':
-                self.add_data_item(item_name, 'TEXT', supplement)
-            elif aline['type'] == 'date':
-                self.add_data_item(item_name, 'DATE', supplement)
-            else:
-                print('Problem in building table {} with line <{}>'.format(self.tablename, aline))
-                print(aline['type'], '\n')
+        item_name = aline['item name']
+        supplement = aline['supplemental strings'] or ''
 
-    def add_data_item(self, item_name, type_string, supplement):
-        if type_string != 'SERIAL':
+        def add_to_string(self, item_name, type_string, supplement):
+            if supplement:
+                new_item = '\t{} {} {}'.format(item_name, type_string, supplement)
+            else:
+                new_item = '\t{} {}'.format(item_name, type_string)
+            self.data_items.append(new_item)
+
+        def add_column_name_and_to_string(self, item_name, type_string, supplement):
             self.column_names.append(item_name)
-        if supplement:
-            new_item = '\t{} {} {}'.format(item_name, type_string, supplement)
+            add_to_string(self, item_name, type_string, supplement)
+
+        if aline['type'] == 'PK':
+            self.primary_key_contraint = '\tCONSTRAINT {} PRIMARY KEY {}'.format(item_name, supplement)
+        elif aline['type'] == 'FK':
+            self.constraints.append('CONSTRAINT {} FOREIGN KEY {}'.format(item_name, supplement))
+        elif aline['type'] == 'ser':
+            add_to_string(self, item_name, 'SERIAL', supplement)
+        elif aline['type'] == 'int':
+            add_column_name_and_to_string(self, item_name, 'INT', supplement)
+        elif aline['type'] == 'var':
+            add_column_name_and_to_string(self, item_name, 'VARCHAR(80)', supplement)
+        elif aline['type'] == 'text':
+            add_column_name_and_to_string(self, item_name, 'TEXT', supplement)
+        elif aline['type'] == 'date':
+            add_column_name_and_to_string(self, item_name, 'DATE', supplement)
         else:
-            new_item = '\t{} {}'.format(item_name, type_string)
-        self.data_items.append(new_item)
+            print('Problem in building table {} with line <{}>'.format(self.tablename, aline))
+            print(aline['type'], '\n')
 
     @property
     def insert_cmdstring(self):
