@@ -28,15 +28,6 @@ class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
         self.assertEqual(person_table.insert_cmdstring, insert)
         self.assertEqual(person_table.create_query_cmd_string, query)
 
-        print(person_table.createtable_cmdstring)
-        print()
-        print(person_table.insert_cmdstring)
-        print()
-        print(person_table.create_query_cmd_string)
-
-        self.assertFalse('Add Exception class to db_cmd for flagging problems!')
-
-
 
 if __name__ == '__main__':
     unittest.main()

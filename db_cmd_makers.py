@@ -1,6 +1,12 @@
 from collections import OrderedDict
 
 
+class SQLCommandMakerException(Exception):
+    def __init__(self, *args):
+        super().__init__(args)
+        self.reasons = args
+
+
 def extract_sql_table_cmds(line_generator):
     current_table = None
     sql_tables = OrderedDict()
@@ -37,26 +43,30 @@ class SQL_Table(object):
             self.column_names.append(item_name)
             add_to_string(self, item_name, type_string, supplement)
 
-        if aline['type'] == 'PK':
+        sql_data_type = aline['type'].upper()
+        if sql_data_type == 'PK':
             self.primary_key_contraint = '\tCONSTRAINT {} PRIMARY KEY {}'.format(item_name, supplement)
-        elif aline['type'] == 'FK':
+        elif sql_data_type == 'FK':
             self.constraints.append('CONSTRAINT {} FOREIGN KEY {}'.format(item_name, supplement))
-        elif aline['type'] == 'ser':
+        elif sql_data_type == 'SER':
             add_to_string(self, item_name, 'SERIAL', supplement)
-        elif aline['type'] == 'int':
+        elif sql_data_type == 'INT':
             add_column_name_and_to_string(self, item_name, 'INT', supplement)
-        elif aline['type'] == 'var':
+        elif sql_data_type == 'VAR':
             add_column_name_and_to_string(self, item_name, 'VARCHAR(80)', supplement)
-        elif aline['type'] == 'text':
+        elif sql_data_type == 'TEXT':
             add_column_name_and_to_string(self, item_name, 'TEXT', supplement)
-        elif aline['type'] == 'date':
+        elif sql_data_type == 'DATE':
             add_column_name_and_to_string(self, item_name, 'DATE', supplement)
         else:
-            print('Problem in building table {} with line <{}>'.format(self.tablename, aline))
-            print(aline['type'], '\n')
+            msg = 'Type code "{}" not handled in building table {} with line \n<{}>'
+            msg = msg.format(aline['type'], self.tablename, aline)
+            raise SQLCommandMakerException(msg)
 
     def inspect_for_error(self):
-        print('Debug... am in SQL_Table.inspect_for_errors for table "{}"'.format(self.tablename))
+        if not self.primary_key_contraint:
+            msg = 'Making table "{}" did not find the required primary key "pk"'.format(self.tablename)
+            raise SQLCommandMakerException(msg)
 
     @property
     def insert_cmdstring(self):
