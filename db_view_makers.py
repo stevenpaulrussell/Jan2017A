@@ -10,38 +10,36 @@ class SQLViewMakerException(Exception):
 def extract_sql_view_cmds(line_generator):
     sql_views = OrderedDict()
     for aline in line_generator:
-        viewname = aline['view name']
-        if viewname:
-            sql_views[viewname] = current_view = SQL_View(viewname)
+        view_name = aline['view name']
+        if view_name:
+            sql_views[view_name] = current_view = SQL_View(view_name, aline)
         else:
             current_view.add_parameter(aline)
     return sql_views
 
 
-class Sql_View(object):
-    def __init__(self, aline):
-        self.view_name = aline[0]
-        self.view_create_cmd = 'CREATE VIEW {} AS\n\t'.format(self.view_name)
+class SQL_View(object):
+    def __init__(self, view_name, aline):
+        self.view_name = view_name
         self.sql_cmd_fragments = []
-        self.psycopg2_variable_elements = []
-        self.increase(aline)
+        self.query_variables_in_psycopg2_format = []
+        self.add_parameter(aline)
 
-    def increase(self, aline):
-        sql_cmd_fragment, psycopg2_variable_element = aline[1:3]
-        if not sql_cmd_fragment:
-            return
+    def add_parameter(self, aline):
+        sql_cmd_fragment = aline['sql command']
+        psycopg2_variable_element = aline['value list'] or ''
         self.sql_cmd_fragments.append(sql_cmd_fragment)
         if psycopg2_variable_element:
-            self.psycopg2_variable_elements.append(psycopg2_variable_element)
+            self.query_variables_in_psycopg2_format.append(psycopg2_variable_element)
 
     @property
     def create_view_cmd_string(self):
-        creator = self.view_create_cmd + '\n\t'.join(self.sql_cmd_fragments)
-        if self.psycopg2_variable_elements:
-            sql_variables = '\n\tvaluelist ' + ', '.join(self.psycopg2_variable_elements)
-            return creator + sql_variables
+        essentials = 'CREATE VIEW {} AS\n\t'.format(self.view_name) + '\n\t'.join(self.sql_cmd_fragments)
+        if self.query_variables_in_psycopg2_format:
+            sql_variables = '\n\tvaluelist ' + ', '.join(self.query_variables_in_psycopg2_format)
+            return essentials + sql_variables
         else:
-            return creator
+            return essentials
 
     @property
     # So that each view also is a report -- make the right query string

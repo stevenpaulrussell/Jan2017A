@@ -11,7 +11,7 @@ import db_query_makers
 
 
 class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
-    def test_can_make_commands_for_person_table(self):
+    def test_can_make_commands_for_generating_table_person(self):
         template_line_gen = spreadsheet_keyvalue_generator(test_db_template_path)
         sql_tables = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
         self.assertIn('person', sql_tables)
@@ -33,19 +33,31 @@ class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
         self.assertEqual(person_table.create_query_cmd_string, query)
 
 
-class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
-    def test_can_make_commands_for_person_table(self):
+class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
+    def test_can_make_commands_for_view(self):
         template_line_gen = spreadsheet_keyvalue_generator(test_view_template_path)
         sql_views = db_view_makers.extract_sql_view_cmds(template_line_gen)
-        self.assertIn('person', sql_views)
+        self.assertIn('tutor_active_view', sql_views)
+        self.assertEqual(len(sql_views), 12)
+        tutor_active_view = sql_views['tutor_active_view']
+        print('\n{}\n{}\n'.format('tutor_active_view', repr(tutor_active_view.create_query_cmd_string)))
+        create = 'SELECT moniker, institution, program, tag, value, url, schoolyear, date\n\tFROM tutor_active_view'
+        self.assertEqual(tutor_active_view.create_query_cmd_string, create)
 
 
-class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
-    def test_can_make_commands_for_person_table(self):
+class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
+    def test_can_make_commands_for_query(self):
         template_line_gen = spreadsheet_keyvalue_generator(test_query_template_path)
         sql_queries = db_query_makers.extract_sql_query_cmds(template_line_gen)
-        self.assertIn('person', sql_queries)
-        self.assertEqual(len(sql_queries), 12)
+        self.assertIn('course_completes', sql_queries)
+        self.assertEqual(len(sql_queries), 6)
+        course_completes = sql_queries['course_completes']
+        print('\n{}\n{}\n'.format('course_completes query', course_completes.create_query_cmd_string))
+        create = 'SELECT moniker,  schoolyear, schoolterm, classhandle, tag, value\n\tFROM ' \
+                 'course_ended_view\n\tWHERE  tag = (%s)\n\tGROUP BY moniker, schoolyear, ' \
+                 'schoolterm, classhandle, tag, value\n\tORDER BY moniker, schoolyear, ' \
+                 'schoolterm\n\tvaluelist Completed'
+        self.assertEqual(course_completes.create_query_cmd_string, create)
 
 
 if __name__ == '__main__':
