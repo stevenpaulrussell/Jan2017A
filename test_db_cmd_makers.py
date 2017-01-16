@@ -40,9 +40,11 @@ class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
         self.assertIn('tutor_active_view', sql_views)
         self.assertEqual(len(sql_views), 12)
         canada_view = sql_views['canada_view']
-        print('\n{}\n{}\n'.format('canada_view', repr(canada_view.create_query_cmd_string)))
-        create = 'This is not the right string, but the one displayed is also wrong'
-        self.assertEqual(canada_view.create_query_cmd_string, create)
+        print('\n{}\n{}\n'.format('canada_view', canada_view.create_view_cmd_string))
+        create = 'CREATE VIEW canada_view AS\n\tSELECT moniker,  institution, program, ' \
+                 'value, schoolyear, date\n\tFROM program_event\n\tWHERE  ' \
+                 'institution  =  (%s)  AND  program  =  (%s)  AND tag = (%s)\n\tvaluelist La Canada, student, Gnumber'
+        self.assertEqual(canada_view.create_view_cmd_string, create)
 
 
 class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
