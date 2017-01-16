@@ -1,3 +1,4 @@
+import os.path
 import collections
 
 import yaml
@@ -19,6 +20,16 @@ def read_yaml(yaml_path):
 
 def write_yaml(data, yaml_path):
     yaml.safe_dump(data, yaml_path)
+
+
+def read_my_directory(directory_path):
+    my_gen = spreadsheet_keyvalue_generator(directory_path)
+    my_directory = {}
+    for aline in my_gen:
+        alias = aline.pop('alias')
+        assert aline['system'] == 'steve air'
+        my_directory[alias] = os.path.join(aline['path'], aline['filename'])
+    return my_directory
 
 
 def spreadsheet_keyvalue_generator(spreadsheet_path):

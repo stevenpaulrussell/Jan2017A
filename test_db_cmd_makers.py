@@ -5,7 +5,7 @@ from file_utilities import spreadsheet_keyvalue_generator
 import db_cmd_makers
 import db_view_makers
 import db_query_makers
-#import sql_command_library
+import sql_command_library
 
 import setup_common_for_test
 
@@ -64,10 +64,10 @@ class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
 
 
 class TestRetrievalOfSQLCommandsFromLibrary(unittest.TestCase):
-    def xtest_can_retrieve_table_create_commands(self):
-        print(1, sql_command_library.read_db_creation_commands())
-        sql_command_library.write_db_creation_commands()
-        print(2, sql_command_library.read_db_creation_commands())
+    def test_can_retrieve_table_create_commands(self):
+        sql_command_library.write_db_creation_commands(test_directory)
+        db_creation_commands = sql_command_library.read_db_creation_commands(test_directory)
+        self.assertIn('person', db_creation_commands)
 
 
 if __name__ == '__main__':
