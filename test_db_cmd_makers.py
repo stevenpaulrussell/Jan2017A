@@ -8,6 +8,7 @@ from test_severalitems import test_query_template_path
 import db_cmd_makers
 import db_view_makers
 import db_query_makers
+import sql_command_library
 
 
 class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
@@ -40,7 +41,6 @@ class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
         self.assertIn('tutor_active_view', sql_views)
         self.assertEqual(len(sql_views), 12)
         canada_view = sql_views['canada_view']
-        print('\n{}\n{}\n'.format('canada_view', canada_view.create_view_cmd_string))
         create = 'CREATE VIEW canada_view AS\n\tSELECT moniker,  institution, program, ' \
                  'value, schoolyear, date\n\tFROM program_event\n\tWHERE  ' \
                  'institution  =  (%s)  AND  program  =  (%s)  AND tag = (%s)\n\tvaluelist La Canada, student, Gnumber'
@@ -54,12 +54,18 @@ class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
         self.assertIn('course_completes', sql_queries)
         self.assertEqual(len(sql_queries), 6)
         course_completes = sql_queries['course_completes']
-        print('\n{}\n{}\n'.format('course_completes query', course_completes.create_query_cmd_string))
         create = 'SELECT moniker,  schoolyear, schoolterm, classhandle, tag, value\n\tFROM ' \
                  'course_ended_view\n\tWHERE  tag = (%s)\n\tGROUP BY moniker, schoolyear, ' \
                  'schoolterm, classhandle, tag, value\n\tORDER BY moniker, schoolyear, ' \
                  'schoolterm\n\tvaluelist Completed'
         self.assertEqual(course_completes.create_query_cmd_string, create)
+
+
+class TestRetrievalOfSQLCommandsFromLibrary(unittest.TestCase):
+    def test_can_retrieve_table_create_commands(self):
+        print(1, sql_command_library.read_db_creation_commands())
+        sql_command_library.write_db_creation_commands()
+        print(2, sql_command_library.read_db_creation_commands())
 
 
 if __name__ == '__main__':

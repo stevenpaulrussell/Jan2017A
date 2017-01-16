@@ -19,7 +19,6 @@ db_template = 'sass0_master2.xls'
 view_template = 'sql_views.xls'
 query_template = 'sql_queries.xls'
 
-
 test_yaml_path = os.path.join(local_path, test_yaml_filename)
 test_source_path = os.path.join(local_path, test_source_directory)
 
@@ -66,6 +65,10 @@ class Test_Yaml_Functions(Test_Do_Setups):
         self.assertTrue(os.path.exists(test_yaml_path))
         test_data = file_utilities.read_yaml(test_yaml_path)
         self.assertEqual(test_data, yaml_test_dictionary)
+        print('\n{}\n{}'.format('*'*8, 'Fix up the yaml_test_dictionary in test_severalitems:'))
+        for key, value in test_data.items():
+            print('\t{}:\t{}'.format(key, value))
+        print('*'*8, '\n')
 
 
 class Test_get_directories_and_db_spec_from_yaml(Test_Do_Setups):
