@@ -2,8 +2,12 @@ import unittest
 
 from file_utilities import spreadsheet_keyvalue_generator
 from test_severalitems import test_db_template_path
+from test_severalitems import test_view_template_path
+from test_severalitems import test_query_template_path
 
 import db_cmd_makers
+import db_view_makers
+import db_query_makers
 
 
 class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
@@ -27,6 +31,21 @@ class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
         self.assertEqual(person_table.createtable_cmdstring, create)
         self.assertEqual(person_table.insert_cmdstring, insert)
         self.assertEqual(person_table.create_query_cmd_string, query)
+
+
+class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
+    def test_can_make_commands_for_person_table(self):
+        template_line_gen = spreadsheet_keyvalue_generator(test_view_template_path)
+        sql_views = db_view_makers.extract_sql_view_cmds(template_line_gen)
+        self.assertIn('person', sql_views)
+
+
+class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
+    def test_can_make_commands_for_person_table(self):
+        template_line_gen = spreadsheet_keyvalue_generator(test_query_template_path)
+        sql_queries = db_query_makers.extract_sql_query_cmds(template_line_gen)
+        self.assertIn('person', sql_queries)
+        self.assertEqual(len(sql_queries), 12)
 
 
 if __name__ == '__main__':

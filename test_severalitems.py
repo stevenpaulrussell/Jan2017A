@@ -16,6 +16,8 @@ empty_spreadsheet_test_filename = 'empty_spreadsheet_test.xls'
 perm_spreadsheets_filename = 'perm_spreadsheets_test.xlsx'
 person_table_example = 'person_from_TutorsAugust2015.xlsx'
 db_template = 'sass0_master2.xls'
+view_template = 'sql_views.xls'
+query_template = 'sql_queries.xls'
 
 
 test_yaml_path = os.path.join(local_path, test_yaml_filename)
@@ -28,6 +30,8 @@ test_empty_spreadsheet_path = os.path.join(test_source_path, empty_spreadsheet_t
 test_perm_spreadsheets_path = os.path.join(test_source_path, perm_spreadsheets_filename)
 test_person_table_example_path = os.path.join(test_source_path, person_table_example)
 test_db_template_path = os.path.join(test_source_path, db_template)
+test_view_template_path = os.path.join(test_source_path, view_template)
+test_query_template_path = os.path.join(test_source_path, query_template)
 
 yaml_test_dictionary = {'perm_spreadsheets': test_perm_spreadsheets_path,
                         'db_spec': 1,
