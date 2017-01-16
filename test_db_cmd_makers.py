@@ -1,19 +1,21 @@
 import unittest
 
 from file_utilities import spreadsheet_keyvalue_generator
-from test_severalitems import test_db_template_path
-from test_severalitems import test_view_template_path
-from test_severalitems import test_query_template_path
 
 import db_cmd_makers
 import db_view_makers
 import db_query_makers
-import sql_command_library
+#import sql_command_library
+
+import setup_common_for_test
+
+
+test_directory = setup_common_for_test.read_test_locations()
 
 
 class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
     def test_can_make_commands_for_generating_table_person(self):
-        template_line_gen = spreadsheet_keyvalue_generator(test_db_template_path)
+        template_line_gen = spreadsheet_keyvalue_generator(test_directory['db_template'])
         sql_tables = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
         self.assertIn('person', sql_tables)
         self.assertEqual(len(sql_tables), 12)
@@ -36,7 +38,7 @@ class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
 
 class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
     def test_can_make_commands_for_view(self):
-        template_line_gen = spreadsheet_keyvalue_generator(test_view_template_path)
+        template_line_gen = spreadsheet_keyvalue_generator(test_directory['view_template'])
         sql_views = db_view_makers.extract_sql_view_cmds(template_line_gen)
         self.assertIn('tutor_active_view', sql_views)
         self.assertEqual(len(sql_views), 12)
@@ -49,7 +51,7 @@ class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
 
 class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
     def test_can_make_commands_for_query(self):
-        template_line_gen = spreadsheet_keyvalue_generator(test_query_template_path)
+        template_line_gen = spreadsheet_keyvalue_generator(test_directory['query_template'])
         sql_queries = db_query_makers.extract_sql_query_cmds(template_line_gen)
         self.assertIn('course_completes', sql_queries)
         self.assertEqual(len(sql_queries), 6)
@@ -62,7 +64,7 @@ class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
 
 
 class TestRetrievalOfSQLCommandsFromLibrary(unittest.TestCase):
-    def test_can_retrieve_table_create_commands(self):
+    def xtest_can_retrieve_table_create_commands(self):
         print(1, sql_command_library.read_db_creation_commands())
         sql_command_library.write_db_creation_commands()
         print(2, sql_command_library.read_db_creation_commands())
