@@ -2,40 +2,20 @@ import unittest
 import os
 from itertools import chain
 
+from setup_common_for_test import test_source_path
+from setup_common_for_test import test_yaml_path
+from setup_common_for_test import test_directory_path
+from setup_common_for_test import read_test_locations
+from setup_common_for_test import yaml_test_dictionary
+
+import setup_common_for_test
+
 import file_utilities
 
-local_path = '/Users/steve/'
-test_source_directory = 'TestItemsForJan2017A'
-test_yaml_filename = 'test_yaml_file'
-
-bad_header_spreadsheet_test_filename = 'bad_header_spreadsheet_test.xls'
-header_only_spreadsheet_test_filename = 'header_only_spreadsheet_test.xls'
-various_problems_spreadsheet_test_filename = 'various_problems_spreadsheet_test.xls'
-empty_spreadsheet_test_filename = 'empty_spreadsheet_test.xls'
-
-perm_spreadsheets_filename = 'perm_spreadsheets_test.xlsx'
-person_table_example = 'person_from_TutorsAugust2015.xlsx'
-db_template = 'sass0_master2.xls'
-view_template = 'sql_views.xls'
-query_template = 'sql_queries.xls'
-
-test_yaml_path = os.path.join(local_path, test_yaml_filename)
-test_source_path = os.path.join(local_path, test_source_directory)
-
-test_bad_header_spreadsheet_path = os.path.join(test_source_path, bad_header_spreadsheet_test_filename)
-test_header_only_spreadsheet_path = os.path.join(test_source_path, header_only_spreadsheet_test_filename)
-test_various_problems_spreadsheets_path = os.path.join(test_source_path, various_problems_spreadsheet_test_filename)
-test_empty_spreadsheet_path = os.path.join(test_source_path, empty_spreadsheet_test_filename)
-test_perm_spreadsheets_path = os.path.join(test_source_path, perm_spreadsheets_filename)
-test_person_table_example_path = os.path.join(test_source_path, person_table_example)
-test_db_template_path = os.path.join(test_source_path, db_template)
-test_view_template_path = os.path.join(test_source_path, view_template)
-test_query_template_path = os.path.join(test_source_path, query_template)
-
-yaml_test_dictionary = {'perm_spreadsheets': test_perm_spreadsheets_path,
-                        'db_spec': 1,
-                        'closed_and_mirrored_spreadsheets': 2,
-                        'open_spreadsheets': 3}
+test_bad_header_spreadsheet_path = os.path.join(test_source_path, 'bad_header_spreadsheet_test.xls')
+test_header_only_spreadsheet_path = os.path.join(test_source_path, 'header_only_spreadsheet_test.xls')
+test_various_problems_spreadsheets_path = os.path.join(test_source_path, 'various_problems_spreadsheet_test.xls')
+test_empty_spreadsheet_path = os.path.join(test_source_path, 'empty_spreadsheet_test.xls')
 
 
 class Test_Test_Readiness(unittest.TestCase):
@@ -45,9 +25,6 @@ class Test_Test_Readiness(unittest.TestCase):
         self.assertTrue(os.path.exists(test_header_only_spreadsheet_path))
         self.assertTrue(os.path.exists(test_various_problems_spreadsheets_path))
         self.assertTrue(os.path.exists(test_empty_spreadsheet_path))
-        self.assertTrue(os.path.exists(test_perm_spreadsheets_path))
-        self.assertTrue(os.path.exists(test_person_table_example_path))
-        self.assertTrue(os.path.exists(test_db_template_path))
 
 
 class Test_Do_Setups(unittest.TestCase):
@@ -65,10 +42,6 @@ class Test_Yaml_Functions(Test_Do_Setups):
         self.assertTrue(os.path.exists(test_yaml_path))
         test_data = file_utilities.read_yaml(test_yaml_path)
         self.assertEqual(test_data, yaml_test_dictionary)
-        print('\n{}\n{}'.format('*'*8, 'Fix up the yaml_test_dictionary in test_severalitems:'))
-        for key, value in test_data.items():
-            print('\t{}:\t{}'.format(key, value))
-        print('*'*8, '\n')
 
 
 class Test_get_directories_and_db_spec_from_yaml(Test_Do_Setups):
@@ -77,20 +50,8 @@ class Test_get_directories_and_db_spec_from_yaml(Test_Do_Setups):
         self.mydirectory = file_utilities.read_yaml(test_yaml_path)
 
     def test_can_get_perm_spreadsheets_directory(self):
-        perm_spreadsheets_directory_path = self.mydirectory['perm_spreadsheets']
+        perm_spreadsheets_directory_path = self.mydirectory['test_directory']
         self.assertTrue(os.path.exists(perm_spreadsheets_directory_path))
-
-    def test_can_get_db_specs(self):
-        db_spec_path = self.mydirectory['db_spec']
-        self.assertEqual(db_spec_path, 1)
-
-    def test_can_get_closed_and_mirrored_spreadsheets(self):
-        closed_and_mirrored_spreadsheets = self.mydirectory['closed_and_mirrored_spreadsheets']
-        self.assertEqual(closed_and_mirrored_spreadsheets, 2)
-
-    def test_can_get_db_specs(self):
-        open_spreadsheets = self.mydirectory['open_spreadsheets']
-        self.assertEqual(open_spreadsheets, 3)
 
 
 class Test_can_read_a_spreadsheet(Test_Do_Setups):
@@ -125,19 +86,12 @@ class Test_can_read_a_spreadsheet(Test_Do_Setups):
             data_generator.__next__()
         self.assertIn('spreadsheet is empty', context.exception.reasons[0])
 
-    def test_can_get_a_generator_from_good_sheet_and_yaml(self):
-        mydirectory = file_utilities.read_yaml(test_yaml_path)
-        perm_spreadsheets_directory_path = mydirectory['perm_spreadsheets']
-        data_generator = file_utilities.spreadsheet_keyvalue_generator(perm_spreadsheets_directory_path)
-        first_line = data_generator.__next__()
-        self.assertTrue('table' in first_line.keys())
-        self.assertTrue(first_line['table'] == 'person')
-
 
 class TestWritingToAn_xlsx(Test_Do_Setups):
     def setUp(self):
         super().setUp()
-        self.data_generator = file_utilities.spreadsheet_keyvalue_generator(test_person_table_example_path)
+        self.test_directory = setup_common_for_test.read_test_locations()
+        self.data_generator = file_utilities.spreadsheet_keyvalue_generator(self.test_directory['person_table_example'])
         self.test_write_path = os.path.join(test_source_path, 'TEST_WRITE.xlsx')
 
     def tearDown(self):
@@ -147,7 +101,7 @@ class TestWritingToAn_xlsx(Test_Do_Setups):
 
     def test_copy(self):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.data_generator, self.test_write_path)
-        original_gen = file_utilities.spreadsheet_keyvalue_generator(test_person_table_example_path)
+        original_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_directory['person_table_example'])
         copy_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_write_path)
         for source_item in original_gen:
             copy_item = copy_gen.__next__()
@@ -186,25 +140,13 @@ class TestWritingToAn_xlsx(Test_Do_Setups):
             if aline['last'].lower() == 'moss':
                 return 'No {} allowed'.format(aline['last'])
 
-        source_gen = file_utilities.spreadsheet_keyvalue_generator(test_person_table_example_path)
+        source_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_directory['person_table_example'])
         filtered_gen = file_utilities.gen_by_filtering_from_gen_list(source_gen, stop_last_name_moss, msg_store)
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(filtered_gen, self.test_write_path)
         copy_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_write_path)
         contents = [copy_item for copy_item in copy_gen]
         self.assertEqual(len(contents), 5)
         self.assertEqual(self.msg, 'No Moss allowed')
-
-
-class TestWorkingWith_DB_Template(unittest.TestCase):
-    def test_smoke_test_of_template(self):
-        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(test_db_template_path)
-        first_line = template_line_gen.__next__()
-        self.assertIn('table name', first_line)
-
-
-
-
-
 
 
 
