@@ -22,8 +22,13 @@ def read_db_creation_commands(my_directory):
 def write_db_creation_commands(my_directory):
     template_line_gen = file_utilities.spreadsheet_keyvalue_generator(my_directory['db_template'])
     db_commands = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
-    create_tables = [table.createtable_cmdstring for table in db_commands.values()]
-    with open(my_directory['create_table_cmds'], 'w') as fp:
-        for item in create_tables:
+    write_cmds(my_directory['create_table_cmds'], [table.createtable_cmdstring for table in db_commands.values()])
+    write_cmds(my_directory['insert_into_table_cmds'], [table.insert_cmdstring for table in db_commands.values()])
+    write_cmds(my_directory['table_as_query_cmds'], [table.create_query_cmd_string for table in db_commands.values()])
+
+
+def write_cmds(my_path, my_gen):
+    with open(my_path, 'w') as fp:
+        for item in my_gen:
             fp.write(item + '\n\n')
 
