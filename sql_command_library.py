@@ -27,6 +27,19 @@ def write_db_creation_commands(my_directory):
     write_cmds(my_directory['table_as_query_cmds'], [table.create_query_cmd_string for table in db_commands.values()])
 
 
+def write_view_creation_commands(my_directory):
+    template_line_gen = file_utilities.spreadsheet_keyvalue_generator(my_directory['view_template'])
+    view_commands = db_view_makers.extract_sql_view_cmds(template_line_gen)
+    write_cmds(my_directory['create_view_cmds'], [view.create_view_cmd_string for view in view_commands.values()])
+    write_cmds(my_directory['view_as_query_cmds'], [view.create_query_cmd_string for view in view_commands.values()])
+
+
+def write_query_creation_commands(my_directory):
+    template_line_gen = file_utilities.spreadsheet_keyvalue_generator(my_directory['query_template'])
+    query_commands = db_query_makers.extract_sql_query_cmds(template_line_gen)
+    write_cmds(my_directory['create_query_cmds'], [query.create_query_cmd_string for query in query_commands.values()])
+
+
 def write_cmds(my_path, my_gen):
     with open(my_path, 'w') as fp:
         for item in my_gen:

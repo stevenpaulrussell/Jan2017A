@@ -67,6 +67,8 @@ class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
 class TestRetrievalOfSQLCommandsFromLibrary(unittest.TestCase):
     def test_can_retrieve_table_create_commands(self):
         sql_command_library.write_db_creation_commands(test_directory)
+        sql_command_library.write_view_creation_commands(test_directory)
+        sql_command_library.write_query_creation_commands(test_directory)
         db_creation_commands = sql_command_library.read_db_creation_commands(test_directory)
         self.assertIn('person', db_creation_commands)
 
