@@ -15,6 +15,7 @@ test_directory = setup_common_for_test.read_test_locations()
 
 class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
     def test_can_make_commands_for_generating_table_person(self):
+        print('***', test_directory['db_template'])
         template_line_gen = spreadsheet_keyvalue_generator(test_directory['db_template'])
         sql_tables = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
         self.assertIn('person', sql_tables)
