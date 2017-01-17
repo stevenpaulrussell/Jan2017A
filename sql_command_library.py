@@ -19,6 +19,14 @@ def read_db_creation_commands(my_directory):
     return db_creation_commands
 
 
+def read_cmds_as_list(my_path):
+    with open(my_path, 'r') as fp:
+        commands_as_string = fp.read()
+    commands_as_list = commands_as_string.split('\n\n')
+
+
+
+
 def write_db_creation_commands(my_directory):
     template_line_gen = file_utilities.spreadsheet_keyvalue_generator(my_directory['db_template'])
     db_commands = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
