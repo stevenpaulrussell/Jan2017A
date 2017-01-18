@@ -71,7 +71,6 @@ class TestRetrievalOfSQLCommandsFromLibrary(unittest.TestCase):
         sql_command_library.write_query_creation_commands(test_directory)
         db_creation_commands = sql_command_library.read_db_creation_commands(test_directory)
         self.assertIn('person', db_creation_commands)
-        self.assertFalse('Must name the queries somehow, and finish reading in views and queries as a group')
 
 
 if __name__ == '__main__':

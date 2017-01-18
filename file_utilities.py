@@ -27,8 +27,7 @@ def read_my_directory(directory_path):
     my_directory = {}
     for aline in my_gen:
         alias = aline.pop('alias')
-        assert aline['system'] == 'steve air'
-        my_directory[alias] = os.path.join(aline['path'], aline['filename'])
+        my_directory[alias] = dict(aline)
     return my_directory
 
 
