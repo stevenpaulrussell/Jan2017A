@@ -66,22 +66,22 @@ class TestSentryGetsFileChanges(unittest.TestCase):
         self.assertIn(temp_name, file_dictionary)
         self.assertIn('.sentry', file_dictionary)
 
-    def test_load_json_from_dot_sentry_returns_None_if_no_dot_sentry(self):
+    def xtest_load_json_from_dot_sentry_returns_None_if_no_dot_sentry(self):
         sentry.dump_json_to_dot_sentry(dropbox_directory_path)
         sentry.load_json_from_dot_sentry(dropbox_directory_path)
         self.assertEqual(sentry.previous_file_data, {})
 
-    def test_dump_json_from_dot_sentry_returns_None_if_no_dot_sentry(self):
+    def xtest_dump_json_from_dot_sentry_returns_None_if_no_dot_sentry(self):
         sentry.dump_json_to_dot_sentry(dropbox_directory_path)
         sentry.load_json_from_dot_sentry(dropbox_directory_path)
         self.assertEqual(sentry.previous_file_data, {})
 
-    def test_sentry_take_roll_of_new_changes_and_missing_finds_nothing_with_nothing_in(self):
+    def xtest_sentry_take_roll_of_new_changes_and_missing_finds_nothing_with_nothing_in(self):
         new, changed, missing = sentry.take_roll_of_new_changes_and_missing(dropbox_directory_path)
         self.assertEqual(new, set())
         self.assertEqual(missing, set())
 
-    def test_sentry_take_roll_of_new_changes_and_missing_finds_two_new_files(self):
+    def xtest_sentry_take_roll_of_new_changes_and_missing_finds_two_new_files(self):
         self.make_a_file()
         self.make_a_file('.sentry')
         new, changed, missing = sentry.take_roll_of_new_changes_and_missing(dropbox_directory_path)
@@ -89,6 +89,26 @@ class TestSentryGetsFileChanges(unittest.TestCase):
         self.assertIn('.sentry', new)
         self.assertEqual(changed, set())
         self.assertEqual(missing, set())
+
+    def test_sentry_finds_changes(self):
+        self.make_a_file()
+        self.make_a_file('.sentry')
+        new, changed, missing = sentry.take_roll_of_new_changes_and_missing(dropbox_directory_path)
+        self.assertIn('temp_name', new)
+        self.assertIn('.sentry', new)
+        self.assertEqual(changed, set())
+        self.assertEqual(missing, set())
+        time.sleep(3)
+        with open(self.temp_path, 'a') as fp:
+            fp.write('goodbye\n')
+        new, changed, missing = sentry.take_roll_of_new_changes_and_missing(dropbox_directory_path)
+        self.assertEqual(new, set())
+        self.assertIn('temp_name', changed)
+        self.assertEqual(missing, set())
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

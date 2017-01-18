@@ -18,7 +18,9 @@ def take_roll_of_new_changes_and_missing(apath):
     for file_name in persisted:
         if current_file_data[file_name] != previous_file_data[file_name]:
             changed.add(file_name)
-    return new, missing, changed
+    previous_file_data = current_file_data
+    dump_json_to_dot_sentry(apath)
+    return new, changed, missing
 
 
 def get_current_file_stats(apath):
