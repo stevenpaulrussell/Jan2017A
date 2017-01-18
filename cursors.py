@@ -2,6 +2,8 @@ import os
 import psycopg2
 from collections import OrderedDict
 
+import dataqueda_constants
+
 
 class Commander(object):
     drop_table_string = "DROP TABLE IF EXISTS {} CASCADE"
@@ -41,7 +43,7 @@ class Commander(object):
         try:
             self.cur.execute(cmd, *myvars)
         except Exception as e:
-            msg = 'Exception -->{}<--.\tPsycopg2 (cmd, vars) were cmd==>{}<==. vars==>{}<=='.format(repr(e), cmd, myvars)
+            msg = 'Exception "<{}>"\nPsycopg2 (cmd, vars) were cmd "<{}>". vars "<{}>"'.format(repr(e), cmd, myvars)
             self.con.rollback()
             return msg
 
@@ -82,4 +84,3 @@ def add_filename_to_build_history(file_name, story='to be added', author='to be 
     insert_values = {'filename': file_name, 'story': story, 'author': author, 'incorporated': '2015/12/26'}
     cmdr.do_cmd(insert_cmdstring, insert_values)
     cmdr.commit()
-
