@@ -11,6 +11,14 @@ def read_db_creation_commands(my_directory):
     return read_cmds_as_list(my_directory['create_table_cmds'])
 
 
+def read_view_creation_commands(my_directory):
+    return read_cmds_as_list(my_directory['create_view_cmds'])
+
+
+def read_query_creation_commands(my_directory):
+    return read_cmds_as_list(my_directory['create_query_cmds'])
+
+
 def read_cmds_as_list(my_path):
     wanted = collections.OrderedDict()
     with open(my_path, 'r') as fp:
