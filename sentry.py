@@ -6,7 +6,7 @@ SENTRY_FILE_NAME = '.sentry'
 
 
 def take_roll_of_new_changes_and_missing(apath):
-    previous_file_data = load_json_from_dot_sentry(apath)
+    previous_file_data = load_json_from_sentry_file(apath)
     previous_file_names = set(previous_file_data.keys())
     current_file_data = get_current_file_stats(apath)
     current_file_names = set(current_file_data.keys())
@@ -17,7 +17,7 @@ def take_roll_of_new_changes_and_missing(apath):
     for file_name in persisted:
         if current_file_data[file_name] != previous_file_data[file_name]:
             changed.add(file_name)
-    dump_json_to_dot_sentry(apath, current_file_data)
+    dump_json_to_sentry_file(apath, current_file_data)
     return new, changed, missing
 
 
@@ -30,7 +30,7 @@ def get_current_file_stats(apath):
     return current_file_data
 
 
-def load_json_from_dot_sentry(apath):
+def load_json_from_sentry_file(apath):
     try:
         with open(os.path.join(apath, SENTRY_FILE_NAME), 'r') as fp:
             return json.load(fp)
@@ -38,6 +38,6 @@ def load_json_from_dot_sentry(apath):
         return {}
 
 
-def dump_json_to_dot_sentry(apath, previous_file_data):
+def dump_json_to_sentry_file(apath, previous_file_data):
     with open(os.path.join(apath, SENTRY_FILE_NAME), 'w') as fp:
         json.dump(previous_file_data, fp)
