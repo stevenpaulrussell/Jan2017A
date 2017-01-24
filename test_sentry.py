@@ -14,13 +14,13 @@ class TestSentryGetsFileChanges(unittest.TestCase):
     def setUp(self):
         self.assertTrue(os.path.exists(dropbox_directory_path))
         self.temp_path = os.path.join(dropbox_directory_path, temp_name)
+        sentry.load_json_from_dot_sentry(self.temp_path)
 
     def tearDown(self):
         file_names = next(os.walk(dropbox_directory_path))[-1]
         for file_name in file_names:
             os.remove(os.path.join(dropbox_directory_path, file_name))
         sentry.previous_file_data = {}
-
 
     def make_a_file(self, file_name=temp_name):
         path = os.path.join(dropbox_directory_path, file_name)
@@ -29,7 +29,7 @@ class TestSentryGetsFileChanges(unittest.TestCase):
 
     def test_can_see_files_and_dirs_in_sentry(self):
         self.make_a_file()
-        self.make_a_file('.sentry')
+        sentry.load_json_from_dot_sentry(dropbox_directory_path)
         file_dictionary = sentry.get_current_file_stats(dropbox_directory_path)
         self.assertEqual(sentry.previous_file_data, {})
         self.assertIn(temp_name, file_dictionary)
@@ -47,7 +47,6 @@ class TestSentryGetsFileChanges(unittest.TestCase):
 
     def test_sentry_take_roll_of_new_changes_and_missing_finds_one_new_file(self):
         self.make_a_file()
-        self.make_a_file('.sentry')
         new, changed, missing = sentry.take_roll_of_new_changes_and_missing(dropbox_directory_path)
         self.assertIn('temp_name', new)
         self.assertEqual(changed, set())
@@ -55,7 +54,6 @@ class TestSentryGetsFileChanges(unittest.TestCase):
 
     def test_sentry_finds_changes(self):
         self.make_a_file()
-        self.make_a_file('.sentry')
         new, changed, missing = sentry.take_roll_of_new_changes_and_missing(dropbox_directory_path)
         self.assertIn('temp_name', new)
         self.assertNotIn('.sentry', new)  #This one is ignored

@@ -3,7 +3,6 @@ import time
 import json
 
 sentry_file_name = '.sentry'
-previous_file_data = {}
 
 
 def take_roll_of_new_changes_and_missing(apath):
@@ -34,8 +33,11 @@ def get_current_file_stats(apath):
 
 def load_json_from_dot_sentry(apath):
     global previous_file_data
-    with open(os.path.join(apath, sentry_file_name), 'r') as fp:
-        previous_file_data = json.load(fp)
+    try:
+        with open(os.path.join(apath, sentry_file_name), 'r') as fp:
+            previous_file_data = json.load(fp)
+    except FileNotFoundError:
+        previous_file_data = {}
 
 
 def dump_json_to_dot_sentry(apath):
