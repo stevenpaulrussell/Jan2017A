@@ -29,14 +29,13 @@ class TestSentryGetsFileChanges(unittest.TestCase):
 
     def test_can_see_files_and_dirs_in_sentry(self):
         self.make_a_file()
-        sentry.load_json_from_dot_sentry(dropbox_directory_path)
+        previous_file_data = sentry.load_json_from_dot_sentry(dropbox_directory_path)
         file_dictionary = sentry.get_current_file_stats(dropbox_directory_path)
-        self.assertEqual(sentry.previous_file_data, {})
+        self.assertEqual(previous_file_data, {})
         self.assertIn(temp_name, file_dictionary)
         self.assertNotIn('.sentry', file_dictionary)  #This one is ignored
 
     def test_dump_json_from_dot_sentry_returns_None_if_no_dot_sentry(self):
-        sentry.dump_json_to_dot_sentry(dropbox_directory_path)
         sentry.load_json_from_dot_sentry(dropbox_directory_path)
         self.assertEqual(sentry.previous_file_data, {})
 
