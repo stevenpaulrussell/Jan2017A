@@ -8,7 +8,7 @@ class MyTestCaseDrivesFirstRunThroughSimply(unittest.TestCase):
     insertion (presume no errors for now), and reporting the results.
 
     Need to specify the directories, how they chain, how they instruct
-    
+
     """
     def test_something(self):
         self.assertEqual(True, False)
