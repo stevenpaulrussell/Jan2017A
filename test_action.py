@@ -11,10 +11,11 @@ imports_path = test_directory['imports_locator']
 
 class MyTestCase(unittest.TestCase):
     def test_action_polls_all_directories_for_changes(self):
-        table, to_do, path = action.poll_imports(test_directory['imports_locator'])
+        (table, to_do, path), (new, changed, missing) = action.poll_imports(test_directory['imports_locator'])
         self.assertEqual(table, 'person')
         self.assertEqual(to_do, 'import whole')
         self.assertTrue(os.path.exists(path))
+        print(new, changed, missing)
 
 
 if __name__ == '__main__':
