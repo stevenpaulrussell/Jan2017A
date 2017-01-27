@@ -3,8 +3,6 @@ import os
 import file_utilities
 
 test_source_path = '/Users/steve/TestItemsForJan2017A'
-test_yaml_path = os.path.join(test_source_path, 'test_yaml_file')
-test_directory_path = os.path.join(test_source_path, 'test_directory.xlsx')
 
 #Following hardcoded here instead of in test_directory.  Reason is that these are used to test functions needed for
 # test_directory to be read
@@ -22,8 +20,7 @@ assert os.path.exists(test_various_problems_spreadsheets_path)
 assert os.path.exists(test_empty_spreadsheet_path)
 
 
-yaml_test_dictionary = {'test_directory': test_directory_path}
-test_directory = file_utilities.read_my_directory(yaml_test_dictionary['test_directory'])
+test_directory = file_utilities.read_my_directory(os.path.join(test_source_path, 'test_directory.xlsx'))
 
 
 def read_test_locations():

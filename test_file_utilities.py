@@ -6,27 +6,7 @@ import file_utilities
 import setup_common_for_test as common
 
 
-class Test_Do_Setups(unittest.TestCase):
-    """Super class for tests in order to not duplicate setup and teardown functions"""
-    def setUp(self):
-        with open(common.test_yaml_path, 'w') as fp:
-            file_utilities.write_yaml(common.yaml_test_dictionary, fp)
-
-    def tearDown(self):
-        os.remove(common.test_yaml_path)
-
-
-class Test_get_directories_and_db_spec_from_yaml(Test_Do_Setups):
-    def setUp(self):
-        super().setUp()
-        self.mydirectory = file_utilities.read_yaml(common.test_yaml_path)
-
-    def test_can_get_perm_spreadsheets_directory(self):
-        perm_spreadsheets_directory_path = self.mydirectory['test_directory']
-        self.assertTrue(os.path.exists(perm_spreadsheets_directory_path))
-
-
-class Test_can_read_a_spreadsheet(Test_Do_Setups):
+class Test_can_read_a_spreadsheet(unittest.TestCase):
     def test_various_problems_sheet(self):
         data_generator = file_utilities.spreadsheet_keyvalue_generator(common.test_various_problems_spreadsheets_path)
         first_line = data_generator.__next__()
@@ -59,7 +39,7 @@ class Test_can_read_a_spreadsheet(Test_Do_Setups):
         self.assertIn('spreadsheet is empty', context.exception.reasons[0])
 
 
-class TestWritingToAn_xlsx(Test_Do_Setups):
+class TestWritingToAn_xlsx(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.test_directory = common.read_test_locations()

@@ -1,7 +1,6 @@
 import os.path
 import collections
 
-import yaml
 import xlrd
 import xlsxwriter
 
@@ -10,16 +9,6 @@ class InputSpreadsheetException(Exception):
     def __init__(self, *args, **kwds):
         super().__init__(args, kwds)
         self.reasons = args
-
-
-def read_yaml(yaml_path):
-    with open(yaml_path, 'r') as fp:
-        data = yaml.safe_load(fp)
-    return data
-
-
-def write_yaml(data, yaml_path):
-    yaml.safe_dump(data, yaml_path)
 
 
 def read_my_directory(directory_path):
