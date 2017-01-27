@@ -8,6 +8,8 @@ import sentry
 
 dropbox_directory_path = setup_common_for_test.test_directory['dropbox_test']['path']
 TEMP_FILE_NAME = 'temp_file_name'
+test_directory = setup_common_for_test.read_test_locations()
+imports_path = test_directory['imports_locator']
 
 
 class TestSentryGetsFileChanges(unittest.TestCase):
@@ -65,7 +67,23 @@ class TestSentryGetsFileChanges(unittest.TestCase):
         self.assertEqual(new, set())
         self.assertIn(TEMP_FILE_NAME, changed)
         self.assertEqual(missing, set())
- 
+
+
+class MyTestCase(unittest.TestCase):
+    def test_action_polls_all_directories_for_changes(self):
+        sentry.poll_imports(test_directory['imports_locator'])
+        if sentry.work_list:
+            print('Seeing {} work items'.format(len(sentry.work_list)))
+            for work_item in sentry.work_list:
+                self.assertEqual(work_item.table_name, 'person')
+                self.assertEqual(work_item.to_do, 'import whole')
+                self.assertIn(work_item.file_change, ('new', 'missing'))
+                if work_item.file_change == 'new':
+                    file_path = os.path.join(work_item.directory, work_item.file_name)
+                    self.assertTrue(os.path.exists(file_path))
+        else:
+            print('No change')
+
 
 if __name__ == '__main__':
     unittest.main()

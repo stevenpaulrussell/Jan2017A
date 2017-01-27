@@ -12,20 +12,6 @@ imports_path = test_directory['imports_locator']
 
 
 
-class MyTestCase(unittest.TestCase):
-    def test_action_polls_all_directories_for_changes(self):
-        action.poll_imports(test_directory['imports_locator'])
-        if action.work_list:
-            print('Seeing {} work items'.format(len(action.work_list)))
-            for work_item in action.work_list:
-                self.assertEqual(work_item.table_name, 'person')
-                self.assertEqual(work_item.to_do, 'import whole')
-                self.assertIn(work_item.file_change, ('new', 'missing'))
-                if work_item.file_change == 'new':
-                    file_path = os.path.join(work_item.directory, work_item.file_name)
-                    self.assertTrue(os.path.exists(file_path))
-        else:
-            print('No change')
 
 
 if __name__ == '__main__':
