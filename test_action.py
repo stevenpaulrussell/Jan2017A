@@ -9,6 +9,9 @@ test_directory = setup_common_for_test.read_test_locations()
 imports_path = test_directory['imports_locator']
 
 
+
+
+
 class MyTestCase(unittest.TestCase):
     def test_action_polls_all_directories_for_changes(self):
         action.poll_imports(test_directory['imports_locator'])
@@ -19,7 +22,8 @@ class MyTestCase(unittest.TestCase):
                 self.assertEqual(work_item.to_do, 'import whole')
                 self.assertIn(work_item.file_change, ('new', 'missing'))
                 if work_item.file_change == 'new':
-                    self.assertTrue(os.path.exists(work_item.path))
+                    file_path = os.path.join(work_item.directory, work_item.file_name)
+                    self.assertTrue(os.path.exists(file_path))
         else:
             print('No change')
 
