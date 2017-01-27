@@ -6,6 +6,14 @@ import file_utilities
 import setup_common_for_test as common
 
 
+class Test_Am_Ready_For_Test(unittest.TestCase):
+    def test_have_good_spreadsheet_of_test_locations(self):
+        test_paths = common.read_test_locations()
+        self.assertIn('db_template', test_paths)
+        self.assertIn('dropbox_test', test_paths)
+        self.assertIn('imports_locator', test_paths)
+
+
 class Test_can_read_a_spreadsheet(unittest.TestCase):
     def test_various_problems_sheet(self):
         data_generator = file_utilities.spreadsheet_keyvalue_generator(common.test_various_problems_spreadsheets_path)
@@ -42,8 +50,8 @@ class Test_can_read_a_spreadsheet(unittest.TestCase):
 class TestWritingToAn_xlsx(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        self.test_directory = common.read_test_locations()
-        self.data_generator = file_utilities.spreadsheet_keyvalue_generator(self.test_directory['person_table_example'])
+        self.test_paths = common.read_test_locations()
+        self.data_generator = file_utilities.spreadsheet_keyvalue_generator(self.test_paths['person_table_example'])
         self.test_write_path = os.path.join(common.test_source_path, 'TEST_WRITE.xlsx')
 
     def tearDown(self):
@@ -53,7 +61,7 @@ class TestWritingToAn_xlsx(unittest.TestCase):
 
     def test_copy(self):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.data_generator, self.test_write_path)
-        original_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_directory['person_table_example'])
+        original_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_paths['person_table_example'])
         copy_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_write_path)
         for source_item in original_gen:
             copy_item = copy_gen.__next__()
@@ -92,7 +100,7 @@ class TestWritingToAn_xlsx(unittest.TestCase):
             if aline['last'].lower() == 'moss':
                 return 'No {} allowed'.format(aline['last'])
 
-        source_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_directory['person_table_example'])
+        source_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_paths['person_table_example'])
         filtered_gen = file_utilities.gen_by_filtering_from_gen_list(source_gen, stop_last_name_moss, msg_store)
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(filtered_gen, self.test_write_path)
         copy_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_write_path)

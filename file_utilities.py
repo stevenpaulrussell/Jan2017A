@@ -5,19 +5,21 @@ import xlrd
 import xlsxwriter
 
 
+file_listings = {}
+
+
 class InputSpreadsheetException(Exception):
     def __init__(self, *args, **kwds):
         super().__init__(args, kwds)
         self.reasons = args
 
 
-def read_my_directory(directory_path):
-    my_gen = spreadsheet_keyvalue_generator(directory_path)
-    my_directory = {}
-    for aline in my_gen:
+def read_file_listings(path_to_listings):
+    global file_listings
+    file_listings = {}
+    for aline in spreadsheet_keyvalue_generator(path_to_listings):
         alias = aline.pop('alias')
-        my_directory[alias] = dict(aline)
-    return my_directory
+        file_listings[alias] = dict(aline)
 
 
 def spreadsheet_keyvalue_generator(spreadsheet_path):
