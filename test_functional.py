@@ -1,5 +1,7 @@
 import unittest
 
+import action
+
 
 class MyTestCaseDrivesFirstRunThroughSimply(unittest.TestCase):
     """
@@ -12,13 +14,15 @@ class MyTestCaseDrivesFirstRunThroughSimply(unittest.TestCase):
     If there are errors, the file is removed from person and put into error_files with the errors shown per line.
 
     Need to specify the directories, how they chain, how they instruct
-
-
-
     """
-    def test_something(self):
-        # move a test file into new_imports_whole/person
-        # call action to poll for changes
+
+    # move a test file into new_imports_whole/person
+
+    def test_poll_for_changes_returns_directories_having_changes(self):
+        result = action.poll_imports()
+        self.assertIn('something', result)
+
+    def test_done(self):
         # call action to run the found change
         # have different tests for case file has errors, has no errors.
         # don't forget to initialize and clean up.
