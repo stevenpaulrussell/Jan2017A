@@ -11,24 +11,16 @@ test_directory = setup_common_for_test.read_test_locations()
 
 class MyTestCase(unittest.TestCase):
     def test_am_connecting_locally_and_see_local_tables(self):
-        cmdr = cursors.Commander(**dataqueda_constants.LOCAL)
-        self.assertTrue(cmdr.tableset)
+        cmdr = cursors.Commander(connect=dataqueda_constants.LOCAL)
+        self.assertTrue(cmdr.tableset or cmdr.tableset==set())
 
 
-class CanConnectRemotelyAndMakeTables(unittest.TestCase):
+class CanConnectRemotely(unittest.TestCase):
     def setUp(self):
-        self.cmdr = cursors.Commander(**dataqueda_constants.REMOTE)
+        self.cmdr = cursors.Commander(connect=dataqueda_constants.REMOTE)
 
-    def tearDown(self):
-        self.cmdr.close()
-
-    def test_remote_has_no_tables_to_start(self):
-        self.assertFalse(self.cmdr.tableset)
-
-    def test_one_table_making_remote(self):
-        self.cmdr.do_cmd(sql_command_library.read_db_creation_commands(test_directory)['person'])
-        self.assertTrue(self.cmdr.tableset)
-        self.assertIn('person', self.cmdr.tableset)
+    def test_can_see_remote_table_structure(self):
+        self.assertTrue(self.cmdr.tableset or self.cmdr.tableset==set())
 
 
 

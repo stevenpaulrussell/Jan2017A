@@ -9,9 +9,9 @@ class Commander(object):
     drop_table_string = "DROP TABLE IF EXISTS {} CASCADE"
     drop_view_string = "DROP VIEW IF EXISTS {} CASCADE"
 
-    def __init__(self, **kwds):
+    def __init__(self, connect, **kwds):
         self.my_kwd = kwds
-        self.con = psycopg2.connect(**kwds)
+        self.con = psycopg2.connect(**connect)
         self.cur = self.con.cursor()
 
     def __enter__(self):
