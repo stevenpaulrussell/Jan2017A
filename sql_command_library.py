@@ -22,7 +22,7 @@ def read_query_creation_commands(my_directory):
 def read_cmds_as_list(my_path):
     wanted = collections.OrderedDict()
     with open(my_path, 'r') as fp:
-        commands_as_string = fp.read()
+        commands_as_string = fp.read().strip()
     commands_as_list = commands_as_string.split('\n\n')
     for item in commands_as_list:
         lines = item.split('\n')
