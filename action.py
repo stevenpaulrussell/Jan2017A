@@ -7,17 +7,16 @@ import sql_command_library
 
 
 def get_current_tableset():
-    cmdr = cursors.Commander()
-    return cmdr.tableset
+    return cursors.Commander().tableset
 
 
 def destroy_database_tables(tableset):
-    cmdr = cursors.Commander()
-    for table in tableset:
-        result = cmdr.do_cmd(cmdr.drop_table_string.format(table))
-        if result:
-            return result
-    cmdr.commit()
+    with cursors.Commander() as cmdr:
+        for table in tableset:
+            result = cmdr.do_cmd(cmdr.drop_table_string.format(table))
+            if result:
+                return result
+        cmdr.commit()
 
 
 def make_database_tables(path_to_listings):
