@@ -21,6 +21,13 @@ class Commander(object):
                                         user=user, password=password, host=host, port=5432)
         self.cur = self.con.cursor()
 
+    def __enter__(self):
+        self.__init__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def commit(self):
         self.con.commit()
 

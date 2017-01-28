@@ -32,13 +32,12 @@ class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):
             action.destroy_database_tables(self.tableset)
         result = action.make_database_tables(test_directory)
         tableset = action.get_current_tableset()
-        self.assertEqual(result, [])
+        self.assertFalse(result)
         self.assertIn('person', tableset)
 
     def test_can_make_views(self):
         result = action.make_database_views(test_directory)
-        print('*** made views in test_action.test_can_make_views')
-        self.assertEqual(result, [])
+        self.assertFalse(result)
 
 
 if __name__ == '__main__':

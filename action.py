@@ -32,14 +32,12 @@ def make_database_views(path_to_listings):
 
 def issue_database_commands(builder):
     psycop_msgs = []
-    cmdr = cursors.Commander()
-    for name, cmdstring in builder.items():
-        psycop_msg = cmdr.do_cmd(cmdstring)
-        if psycop_msg:
-            psycop_msgs.append(psycop_msg)
-    if not psycop_msgs:
-        cmdr.commit()
-    cmdr.close()
-    return psycop_msgs
+    with cursors.Commander() as cmdr:
+        for name, cmdstring in builder.items():
+            psycop_msgs.append(cmdr.do_cmd(cmdstring))
+        if any(psycop_msgs):
+            return psycop_msgs
+        else:
+            cmdr.commit()
 
 
