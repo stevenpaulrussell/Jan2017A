@@ -19,22 +19,16 @@ class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
         template_line_gen = spreadsheet_keyvalue_generator(test_directory['db_template'])
         sql_tables = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
         self.assertIn('person', sql_tables)
-        self.assertEqual(len(sql_tables), 12)
+        self.assertTrue(len(sql_tables) > 5)
         person_table = sql_tables['person']
-        create = 'CREATE TABLE person\n\t(\n\tfirst VARCHAR(80) ' \
-                   'NOT NULL,\n\tlast VARCHAR(80) NOT NULL,\n\tbirth DATE NOT NULL,\n\tsex VARCHAR(80),' \
-                   '\n\tjoined_year INT NOT NULL,\n\tjoined_term VARCHAR(80) NOT NULL,\n\tsource VARCHAR(80),' \
-                   '\n\tCONSTRAINT personPK PRIMARY KEY (first, last, birth)\n\t)'
-
-        insert = 'INSERT INTO person\n\t(first, last, birth, sex, joined_year, ' \
-                 'joined_term, source)\nVALUES\n\t(%(first)s, %(last)s, %(birth)s, %(sex)s,' \
-                 ' %(joined_year)s, %(joined_term)s, %(source)s)'
-
-        query = 'SELECT first, last, birth, sex, joined_year, joined_term, source\n\tFROM person'
-
-        self.assertEqual(person_table.createtable_cmdstring, create)
-        self.assertEqual(person_table.insert_cmdstring, insert)
-        self.assertEqual(person_table.create_query_cmd_string, query)
+        create = 'CREATE TABLE person\n'
+        insert1 = 'INSERT INTO person\n'
+        insert2 = '\nVALUES\n\t(%(first)s, %(last)s'
+        query = 'SELECT first, last'
+        self.assertIn(create, person_table.createtable_cmdstring)
+        self.assertIn(insert1, person_table.insert_cmdstring)
+        self.assertIn(insert2, person_table.insert_cmdstring)
+        self.assertIn(query, person_table.create_query_cmd_string)
 
 
 class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
