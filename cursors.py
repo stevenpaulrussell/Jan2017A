@@ -28,15 +28,15 @@ class Commander(object):
         self.con.close()
 
     def do_cmd(self, cmd, *myvars):
-        if 'valuelist' in cmd:
-            real_cmd, varstring = cmd.split('valuelist')
-            myvars = [var.strip() for var in varstring.split(',')]
-            if real_cmd.count('(%s)') != len(myvars):
-                msg = 'In dbcmds.cmd_extractor, have mismatch between variables and places in query "{}"'.format(cmd)
-                raise dataqueda_constants.DBFormatException(msg)
-            return self._do_cmd(real_cmd, myvars)
-        else:
-            return self._do_cmd(cmd, *myvars)
+        return self._valuelist_cmd(cmd) if 'valuelist' in cmd else self._do_cmd(cmd, *myvars)
+
+    def _valuelist_cmd(self, cmd):
+        real_cmd, varstring = cmd.split('valuelist')
+        myvars = [var.strip() for var in varstring.split(',')]
+        if real_cmd.count('(%s)') != len(myvars):
+            msg = 'In dbcmds.cmd_extractor, have mismatch between variables and places in query "{}"'.format(cmd)
+            raise dataqueda_constants.DBFormatException(msg)
+        return self._do_cmd(real_cmd, myvars)
 
     def _do_cmd(self, cmd, *myvars):
         try:
