@@ -32,18 +32,6 @@ class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):
             print('No tables to destroy in '
                   'test_action.Test_Actions_Can_Destroy_And_Create_DB.test_destroy_database_tables')
 
-    def test_can_create_database_tables(self):
-        if self.tableset:
-            action.destroy_database_tables(self.tableset, connect=dataqueda_constants.LOCAL)
-        success, history = action.make_database_tables(test_directory, connect=dataqueda_constants.LOCAL)
-        tableset = action.get_current_tableset(connect=dataqueda_constants.LOCAL)
-        (first_command, vars), first_psycop_response = history[0]
-        self.assertIn('person', tableset)
-        self.assertTrue(success)
-        self.assertIn('CREATE TABLE person', first_command)
-        self.assertEqual(vars, ())
-        self.assertFalse(first_psycop_response)
-
     def test_can_make_views(self):
         success, history = action.make_database_views(test_directory, connect=dataqueda_constants.LOCAL)
         (first_command, vars), first_psycop_response = history[0]
@@ -51,6 +39,20 @@ class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):
         self.assertIn('CREATE VIEW', first_command)
         self.assertEqual(vars, ())
         self.assertFalse(first_psycop_response)
+
+    def test_errors_in_group_commit_detected(self):
+        if self.tableset:
+            action.destroy_database_tables(self.tableset, connect=dataqueda_constants.LOCAL)
+        action.make_database_tables(test_directory, connect=dataqueda_constants.LOCAL)
+        success, history = action.make_database_tables(test_directory, connect=dataqueda_constants.LOCAL)
+        (first_command, vars), first_psycop_response = history[0]
+        self.assertFalse(success)
+        self.assertIn('CREATE TABLE person', first_command)
+        self.assertEqual(vars, ())
+        self.assertTrue(first_psycop_response)
+        self.assertIn('ProgrammingError', first_psycop_response)
+        self.assertIn('already exists', first_psycop_response)
+
 
 
 if __name__ == '__main__':
