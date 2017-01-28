@@ -11,14 +11,13 @@ test_directory = setup_common_for_test.read_test_locations()
 
 class MyTestCase(unittest.TestCase):
     def test_am_connecting_locally_and_see_local_tables(self):
-        cmdr = cursors.Commander()
-        self.assertTrue(dataqueda_constants.LOCAL_CONNECT)
+        cmdr = cursors.Commander(**dataqueda_constants.LOCAL)
         self.assertTrue(cmdr.tableset)
 
 
 class CanConnectRemotelyAndMakeTables(unittest.TestCase):
     def setUp(self):
-        self.cmdr = cursors.Commander(connect_to_local_database=False)
+        self.cmdr = cursors.Commander(**dataqueda_constants.REMOTE)
 
     def tearDown(self):
         self.cmdr.close()

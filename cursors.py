@@ -9,20 +9,12 @@ class Commander(object):
     drop_table_string = "DROP TABLE IF EXISTS {} CASCADE"
     drop_view_string = "DROP VIEW IF EXISTS {} CASCADE"
 
-    def __init__(self, connect_to_local_database=dataqueda_constants.LOCAL_CONNECT):
-        if connect_to_local_database:
-            self.con = psycopg2.connect(database=dataqueda_constants.LOCAL_DATABASENAME)
-        else:
-            database = dataqueda_constants.DATAQUEDA_DATABASE
-            user = dataqueda_constants.DATAQUEDA_USER
-            password = dataqueda_constants.DATAQUEDA_PASSWORD
-            host = dataqueda_constants.DATAQUEDA_HOST
-            self.con = psycopg2.connect(database=database,
-                                        user=user, password=password, host=host, port=5432)
+    def __init__(self, **kwds):
+        self.my_kwd = kwds
+        self.con = psycopg2.connect(**kwds)
         self.cur = self.con.cursor()
 
     def __enter__(self):
-        self.__init__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

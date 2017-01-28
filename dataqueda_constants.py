@@ -1,7 +1,9 @@
 import os
 
 # Following is generally True, and makes both Heroku and local testing safe.  But override this for specific needs
-LOCAL_CONNECT = True if os.environ['DATAQUEDA_LOCAL_HOME_DIR'] else False
+
+
+# LOCAL_CONNECT = True if os.environ['DATAQUEDA_LOCAL_HOME_DIR'] else False
 
 
 TABLE_MASTER_KEY = 'Build_files/master.xls'
@@ -21,13 +23,16 @@ S3REGION = 'us-west-2'
 S3SECRET = os.environ['S3SECRET_tdd_dataqueda']
 AWS_BUCKET = 'tdd-dataqueda'
 
-DATAQUEDA_DATABASE = 'd1cipri3jdtha0'
-DATAQUEDA_USER = 'cbetlnyahiyqzy'
-DATAQUEDA_PASSWORD = os.environ['DATAQUEDA_tdd_PASSWORD']
-DATAQUEDA_HOST = 'ec2-54-83-52-71.compute-1.amazonaws.com'
-DATAQUEDA_URL = 'postgres://cbetlnyahiyqzy:QkjU5eC3K0YfmP1sUzTCAOVaNw@ec2-54-83-52-71.compute-1.amazonaws.com:5432/d1cipri3jdtha0'
+REMOTE = dict(
+    database='d1cipri3jdtha0',
+    user='cbetlnyahiyqzy',
+    password=os.environ['DATAQUEDA_tdd_PASSWORD'],
+    host='ec2-54-83-52-71.compute-1.amazonaws.com',
+    port=5432)
 
-LOCAL_DATABASENAME = 'tdd_dataqueda'
+LOCAL = dict(database='tdd_dataqueda')
+
+DATAQUEDA_URL = 'postgres://cbetlnyahiyqzy:QkjU5eC3K0YfmP1sUzTCAOVaNw@ec2-54-83-52-71.compute-1.amazonaws.com:5432/d1cipri3jdtha0'
 
 
 #
