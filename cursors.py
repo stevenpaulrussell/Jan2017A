@@ -28,7 +28,8 @@ class Commander(object):
         self.con.close()
 
     def do_cmd(self, cmd, *myvars):
-        return self._valuelist_cmd(cmd) if 'valuelist' in cmd else self._do_cmd(cmd, *myvars)
+        psycop_response = self._valuelist_cmd(cmd) if 'valuelist' in cmd else self._do_cmd(cmd, *myvars)
+        return psycop_response
 
     def _valuelist_cmd(self, cmd):
         real_cmd, varstring = cmd.split('valuelist')

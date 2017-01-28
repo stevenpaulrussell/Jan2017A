@@ -6,6 +6,10 @@ import cursors
 import sql_command_library
 
 
+
+
+
+
 def get_current_tableset(**kwds):
     return cursors.Commander(**kwds).tableset
 
@@ -21,15 +25,15 @@ def destroy_database_tables(tableset, connect):
 
 def make_database_tables(path_to_listings, connect):
     table_builder = sql_command_library.read_db_creation_commands(path_to_listings)
-    return issue_database_commands(table_builder, connect)
+    return run_database_commands_as_group(table_builder, connect)
 
 
 def make_database_views(path_to_listings, connect):
     view_builder = sql_command_library.read_view_creation_commands(path_to_listings)
-    return issue_database_commands(view_builder, connect)
+    return run_database_commands_as_group(view_builder, connect)
 
 
-def issue_database_commands(builder, connect):
+def run_database_commands_as_group(builder, connect):
     psycop_msgs = []
     with cursors.Commander(connect) as cmdr:
         for name, cmdstring in builder.items():
