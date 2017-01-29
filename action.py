@@ -6,8 +6,17 @@ import cursors
 import sql_command_library
 
 
-def get_current_tableset(**kwds):
-    return cursors.Commander(**kwds).tableset
+
+def do_a_work_item(connect):
+    try:
+        work = sentry.work_list.pop(0)
+    except IndexError:
+        return
+    return work
+
+
+def get_current_tableset(connect):
+    return cursors.Commander(connect=connect).tableset
 
 
 def destroy_database_tables(tableset, connect):
@@ -16,10 +25,12 @@ def destroy_database_tables(tableset, connect):
             cmdr.do_cmd(cmdr.drop_table_string.format(table))
     return cmdr.success, cmdr.history
 
+
 def make_database_tables(path_to_listings, connect):
     table_builder = sql_command_library.read_db_creation_commands(path_to_listings)
     success, history = run_database_commands_as_group(table_builder, connect, commit='group')
     return success, history
+
 
 def make_database_views(path_to_listings, connect):
     view_builder = sql_command_library.read_view_creation_commands(path_to_listings)
