@@ -40,7 +40,9 @@ class CanProperlyHandleVariousImports(unittest.TestCase):
         self.assertTrue(os.path.exists(self.path_to_person_file_in_import_folder))  # Verify have file copied
         sentry.poll_imports(imports_path)
         self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
-        work = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
+        self.assertTrue(success)
+        self.assertEqual(history[0][1], None)
 
 
 class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):

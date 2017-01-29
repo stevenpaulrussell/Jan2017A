@@ -7,20 +7,26 @@ import sql_command_library
 
 
 
-def do_a_work_item(connect):
+def do_a_work_item(path_to_listings, connect):
     try:
         work = sentry.work_list.pop(0)
     except IndexError:
         return
     if (work.to_do, work.file_change) in [('import whole','new'),]:
-        insert_whole(work.table_name, work.file_path, connect)
+        return insert_whole(work.table_name, work.file_path, path_to_listings, connect)
     else:
         print('In action, do not know what to do with work item "{}"'.format(work.__dict__))
 
 
-def insert_whole(table_name, path, connect):
-    print('insert_whole', table_name, os.path.exists(path))
-    pass
+def insert_whole(table_name, file_path, path_to_listings, connect):
+    all_table_insert_commands = sql_command_library.read_db_insertion_commands(path_to_listings)
+    one_cmd = all_table_insert_commands[table_name]
+    new_lines = file_utilities.spreadsheet_keyvalue_generator(file_path)
+    with cursors.Commander(connect, commit='group') as cmdr:
+        for one_line in new_lines:
+            cmdr.do_cmd(one_cmd, dict(one_line))
+    return cmdr.success, cmdr.history
+
 
 
 

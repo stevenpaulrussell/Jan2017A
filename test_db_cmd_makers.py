@@ -66,9 +66,12 @@ class TestRetrievalOfSQLCommandsFromLibrary(unittest.TestCase):
         db_creation_commands = sql_command_library.read_db_creation_commands(test_directory)
         view_creation_commands = sql_command_library.read_view_creation_commands(test_directory)
         query_creation_commands = sql_command_library.read_query_creation_commands(test_directory)
+        db_insertion_commands = sql_command_library.read_db_insertion_commands(test_directory)
         self.assertIn('person', db_creation_commands)
         self.assertIn('aka_vitals_view', view_creation_commands)
         self.assertIn('scholarships_per_schoolyear', query_creation_commands)
+        self.assertIn('person', db_insertion_commands)
+        print(db_insertion_commands)
 
 
 if __name__ == '__main__':
