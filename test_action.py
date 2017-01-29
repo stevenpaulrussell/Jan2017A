@@ -41,8 +41,11 @@ class CanProperlyHandleVariousImports(unittest.TestCase):
         sentry.poll_imports(imports_path)
         self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
+        (cmd, vars), error_msg = history[0]
         self.assertTrue(success)
-        self.assertEqual(history[0][1], None)
+        self.assertEqual(error_msg, None)
+        self.assertEqual(len(vars), 1)
+        self.assertIn('last', vars[0])
 
 
 class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):

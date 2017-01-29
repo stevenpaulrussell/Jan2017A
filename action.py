@@ -23,7 +23,7 @@ def insert_whole(table_name, file_path, path_to_listings, connect):
     new_lines = file_utilities.spreadsheet_keyvalue_generator(file_path)
     with cursors.Commander(connect, commit='group') as cmdr:
         for one_line in new_lines:
-            cmdr.do_cmd(one_cmd, dict(one_line))
+            cmdr.do_cmd(one_cmd, one_line)
     return cmdr.success, cmdr.history
 
 
