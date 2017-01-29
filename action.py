@@ -6,7 +6,6 @@ import cursors
 import sql_command_library
 
 
-
 def do_a_work_item(path_to_listings, connect):
     try:
         work = sentry.work_list.pop(0)
@@ -26,8 +25,6 @@ def insert_whole(table_name, file_path, path_to_listings, connect):
         for one_line in new_lines:
             cmdr.do_cmd(one_cmd, dict(one_line))
     return cmdr.success, cmdr.history
-
-
 
 
 def get_current_tableset(connect):
@@ -58,5 +55,3 @@ def run_database_commands_as_group(builder, connect, commit):
         for name, cmdstring in builder.items():
             cmdr.do_cmd(cmdstring)
     return cmdr.success, cmdr.history
-
-

@@ -97,7 +97,7 @@ class TestWritingToAn_xlsx(unittest.TestCase):
             self.msg = msg
 
         def stop_last_name_moss(aline):
-            if aline['last'].lower() == 'moss':
+            if aline['last'].lower() == 'garcia':
                 return 'No {} allowed'.format(aline['last'])
 
         source_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_paths['person_table_example'])
@@ -105,9 +105,8 @@ class TestWritingToAn_xlsx(unittest.TestCase):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(filtered_gen, self.test_write_path)
         copy_gen = file_utilities.spreadsheet_keyvalue_generator(self.test_write_path)
         contents = [copy_item for copy_item in copy_gen]
-        self.assertEqual(len(contents), 5)
-        self.assertEqual(self.msg, 'No Moss allowed')
-
+        self.assertEqual(len(contents), 6)
+        self.assertEqual(self.msg, 'No Garcia allowed')
 
 
 if __name__ == '__main__':
