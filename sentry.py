@@ -17,6 +17,7 @@ class WorkItem(object):
         self.directory = directory
         self.file_name = file_name
         self.file_change = file_change
+        self.file_path = os.path.join(directory, file_name)
         work_list.append(self)
 
 

@@ -12,7 +12,16 @@ def do_a_work_item(connect):
         work = sentry.work_list.pop(0)
     except IndexError:
         return
-    return work
+    if (work.to_do, work.file_change) in [('import whole','new'),]:
+        insert_whole(work.table_name, work.file_path, connect)
+    else:
+        print('In action, do not know what to do with work item "{}"'.format(work.__dict__))
+
+
+def insert_whole(table_name, path, connect):
+    print('insert_whole', table_name, os.path.exists(path))
+    pass
+
 
 
 def get_current_tableset(connect):
