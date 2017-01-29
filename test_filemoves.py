@@ -25,7 +25,10 @@ class MoveCopyAndDeleteUsingLocators(unittest.TestCase):
     def test_copy_alias_to_path(self):
         to_match = dict(table='person', action='import whole', system='steve air')
         copy_path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        result = filemoves.copy_alias_to_path('person_table_example', test_directory, copy_path)
+        copied_file_path = filemoves.copy_alias_to_path('person_table_example', test_directory, copy_path)
+        self.assertTrue(os.path.exists(copied_file_path))
+        self.assertEqual(os.path.split(copied_file_path)[0], copy_path)
+        print(copied_file_path)
 
 
 

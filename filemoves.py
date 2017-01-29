@@ -19,6 +19,8 @@ def copy_alias_to_path(alias, locator, path_for_copy):
         raise FileMovesSurprise(msg)
     else:
         shutil.copyfile(source_path, copied_path)
+    return copied_path
+
 
 def find_unique_import_directory_matching_pattern(locator_path, **matchlist):
     matches = find_all_imports_lines_matching_pattern(locator_path, **matchlist)
@@ -27,6 +29,7 @@ def find_unique_import_directory_matching_pattern(locator_path, **matchlist):
         raise FileMovesSurprise(msg)
     else:
         return matches[0]['path']
+
 
 def find_all_imports_lines_matching_pattern(locator_path, **matchlist):
     imports_gen = file_utilities.spreadsheet_keyvalue_generator(locator_path)
