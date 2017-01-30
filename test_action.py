@@ -14,7 +14,13 @@ test_directory = setup_common_for_test.read_test_locations()
 imports_path = test_directory['imports_locator']
 
 
-class CanProperlyHandleVariousImports(unittest.TestCase):
+class CanHandleTestAndDraftImportsAndMakeNeededErrorSheetsAndBuildHistory(unittest.TestCase):
+    def test_got_work_to_do(self):
+        self.assertFalse('In action for imports and in cursors for build history, by-line history. ')
+
+
+
+class CanProperlyHandleWholeTableImports(unittest.TestCase):
     def setUp(self):
         self.file_to_get = set()
         sentry.poll_imports(imports_path)
