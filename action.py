@@ -31,7 +31,7 @@ def insert_whole(insert_cmd, import_lines, connect):
         # add to build history (routine)
         # move from where is to x (routine)
     else:
-        print('insert_whole saw failure')
+        pass
         # write failure spreadsheet from history (routine)
         # move or delete from where is (routine)
     return success, history
