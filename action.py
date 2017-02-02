@@ -15,17 +15,25 @@ def do_a_work_item(path_to_listings, connect):
         return False, work
     else:
         table_name, to_do, file_path, path_to_listings = work.table_name, work.to_do, work.file_path, path_to_listings
-        all_table_insert_commands = sql_command_library.read_db_insertion_commands(path_to_listings)
-        insert_cmd = all_table_insert_commands[table_name]
-        import_lines = file_utilities.spreadsheet_keyvalue_generator(file_path)
+        author = 'work.Something got from directory shares or from imports_locator spreadsheet'
+        insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[table_name]
     if (to_do, work.file_change) in [('import whole','new'),]:
-        return insert_whole(insert_cmd, import_lines, connect)
+        return insert_whole(insert_cmd, file_path, author=author, connect=connect)
+    elif (to_do, work.file_change) in [('import test','new'),]:
+        pass
+    elif (to_do, work.file_change) in [('import by line','new'),]:
+        pass
+    elif (to_do, work.file_change) in [('import by line','changed'),]:
+        pass
     else:
         print('In do_a_work_item, do not know what to do with work item "{}"'.format(work.__dict__))
 
 
-def insert_whole(insert_cmd, import_lines, connect):
-    success, history = general_insert(insert_cmd, import_lines, 'group', connect)
+def insert_whole(insert_cmd, file_path, author, connect):
+    import_lines = file_utilities.spreadsheet_keyvalue_generator(file_path)
+    source_file = os.path.split(file_path)[-1]
+    kwds = dict(commit='group', author=author, source_file=source_file)
+    success, history = general_insert(insert_cmd, import_lines, connect=connect, **kwds)
     if success:
         pass
         # add to build history (routine)
@@ -75,9 +83,14 @@ def make_database_views(path_to_listings, connect):
     return success, history
 
 
-def general_insert(insert_cmd, import_lines, commit, connect):
-    with cursors.Commander(connect, commit=commit) as cmdr:
+def general_insert(insert_cmd, import_lines, commit, connect, **kwds):
+    with cursors.Commander(connect, commit=commit, **kwds) as cmdr:
         for one_line in import_lines:
+            try:
+                one_line.update(author=kwds['author'])
+                one_line.update(source_file=kwds['source_file'])
+            except KeyError:
+                pass
             cmdr.do_cmd(insert_cmd, one_line)
     return cmdr.success, cmdr.history
 

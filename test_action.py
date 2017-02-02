@@ -15,7 +15,7 @@ imports_path = test_directory['imports_locator']
 
 
 class CanHandleTestAndDraftImportsAndMakeNeededErrorSheetsAndBuildHistory(unittest.TestCase):
-    def test_got_work_to_do(self):
+    def xtest_got_work_to_do(self):
         self.assertFalse('In action for imports and in cursors for build history, by-line history. ')
 
 
@@ -71,6 +71,20 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertEqual(len(vars), 1)
         self.assertIn('last', vars[0])
         self.assertIn('IntegrityError', error_msg)
+
+    def test_keywords_source_file_and_author_are_available_for_tables(self):
+        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        sentry.poll_imports(imports_path)
+        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
+        (cmd, vars), error_msg = history[0]
+        import_file_path = self.file_to_get.copy().pop()
+        import_file_name = os.path.split(import_file_path)[-1]
+        self.assertIn('source_file', vars[0])
+        self.assertEqual(import_file_name, vars[0]['source_file'])
+        self.assertIn('author', vars[0])
+        self.assertIn('Something got from directory shares', vars[0]['author'])
+
 
 
 
