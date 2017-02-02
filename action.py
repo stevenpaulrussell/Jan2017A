@@ -9,44 +9,20 @@ BUILD_HISTORY_TABLE = 'build_history'
 
 
 def do_a_work_item(path_to_listings, connect):
-    def add_to_build_history():
-        build_line = dict(filename=source_file, story=kwds['author'], author=kwds['author'], incorporated='2015/12/26')
-        insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[BUILD_HISTORY_TABLE]
-        with cursors.Commander(connect, commit='group') as cmdr:
-            cmdr.do_cmd(insert_cmd, build_line)
-        print('in action.do_a_work_item.add_to_build_history, need an exception watcher on cmdr.success', cmdr.success)
+    if not sentry.changed_list:
         return
-    try:
-        work = sentry.work_list.pop(0)
-    except IndexError:
-        return
-    table_name, to_do, file_path, path_to_listings = work.table_name, work.to_do, work.file_path, path_to_listings
-    insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[table_name]
-    import_lines = file_utilities.spreadsheet_keyvalue_generator(file_path)
-    author = 'work.Something got from directory shares or from imports_locator spreadsheet'
-    source_file = os.path.split(file_path)[-1]
-    kwds = dict(author=author, source_file=source_file)
-    if (to_do, work.file_change) in [('import whole','new'),]:
-        kwds['commit'] = 'group'
-        success, history = general_insert(insert_cmd, import_lines, connect=connect, **kwds)
-        if success:
-            add_to_build_history()
-            # move from where is to x (routine)
-        else:
-            pass
-            # write failure spreadsheet from history (routine)
-            # move or delete from where is (routine)
-    elif (to_do, work.file_change) in [('import test','new'),]:
-        pass
-    elif (to_do, work.file_change) in [('import by line','new'),]:
-        pass
-    elif (to_do, work.file_change) in [('import by line','changed'),]:
-        pass
-    elif work.file_change == 'missing':
-        return False, work
+    change = sentry.changed_list.pop(0)
+    insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[change.table_name]
+    success, history = general_insert(insert_cmd, change.import_lines, connect=connect, **change.command_keys)
+    if success:
+        add_to_build_history(change.build_line, path_to_listings=path_to_listings, connect=connect)
+        # move from where is to x (routine)
     else:
-        print('In do_a_work_item, do not know what to do with work item "{}"'.format(work.__dict__))
+        pass
+        # write failure spreadsheet from history (routine)
+        # move or delete from where is (routine)
     return success, history
+
 
 def insert_whole(insert_cmd, file_path, author, connect):
     return general_insert(insert_cmd, import_lines, connect=connect, **kwds)
@@ -62,6 +38,16 @@ def insert_from_draft():
     pass
     # like insert_whole but single commit, make sure that this will stop processing.  Again, likely use the big
     # common, change commit='single', change post processing
+
+
+def add_to_build_history(build_line, path_to_listings, connect):
+    insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[BUILD_HISTORY_TABLE]
+    with cursors.Commander(connect, commit='group') as cmdr:
+        cmdr.do_cmd(insert_cmd, build_line)
+    print('in action.do_a_work_item.add_to_build_history, need an exception watcher on cmdr.success', cmdr.success)
+    print('might be good to move some of this code back to sentry.WorkItem')
+    return
+
 
 
 def get_current_tableset(connect):

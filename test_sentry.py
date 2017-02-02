@@ -72,9 +72,9 @@ class TestSentryGetsFileChanges(unittest.TestCase):
 class MyTestCase(unittest.TestCase):
     def test_action_polls_all_directories_for_changes(self):
         sentry.poll_imports(test_directory['imports_locator'])
-        if sentry.work_list:
-            print('Seeing {} work items'.format(len(sentry.work_list)))
-            for work_item in sentry.work_list:
+        if sentry.changed_list:
+            print('Seeing {} work items'.format(len(sentry.changed_list)))
+            for work_item in sentry.changed_list:
                 self.assertEqual(work_item.table_name, 'person')
                 self.assertEqual(work_item.to_do, 'import whole')
                 self.assertIn(work_item.file_change, ('new', 'missing'))

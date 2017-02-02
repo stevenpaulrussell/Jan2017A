@@ -24,7 +24,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
     def setUp(self):
         self.file_to_get = set()
         sentry.poll_imports(imports_path)
-        sentry.work_list = []
+        sentry.changed_list = []
         to_match = dict(table='person', action='import whole', system='steve air')
         path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
         to_get = filemoves.copy_alias_to_path('person_table_example', test_directory, path)
@@ -34,12 +34,12 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         for a_file_path in self.file_to_get:
             os.remove(a_file_path)
         sentry.poll_imports(imports_path)
-        sentry.work_list = []
+        sentry.changed_list = []
 
     def test_can_find_and_import_whole_tables(self):
-        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        self.assertEqual(sentry.changed_list, [])  # Verify all clear!
         sentry.poll_imports(imports_path)
-        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
         self.assertTrue(success)
@@ -48,11 +48,11 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn('last', vars[0])
 
     def test_double_import_whole_tables_generates_right_errors(self):
-        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        self.assertEqual(sentry.changed_list, [])  # Verify all clear!
         sentry.poll_imports(imports_path)
-        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
-        self.assertTrue(len(sentry.work_list) == 0)  # Work done has cleared the work_list
+        self.assertTrue(len(sentry.changed_list) == 0)  # Work done has cleared the work_list
         self.tearDown()                         # Remove import file, sentry sees, clear that seeing away
         # redo the import !
         to_match = dict(table='person', action='import whole', system='steve air')
@@ -61,9 +61,9 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.file_to_get.add(to_get)
 
         sentry.poll_imports(imports_path)
-        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
-        self.assertTrue(len(sentry.work_list) == 0)  # Work done has cleared the work_list
+        self.assertTrue(len(sentry.changed_list) == 0)  # Work done has cleared the work_list
 
         (cmd, vars), error_msg = history[0]
         self.assertFalse(success)
@@ -73,9 +73,9 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn('IntegrityError', error_msg)
 
     def test_keywords_source_file_and_author_are_available_for_tables(self):
-        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        self.assertEqual(sentry.changed_list, [])  # Verify all clear!
         sentry.poll_imports(imports_path)
-        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
         import_file_path = self.file_to_get.copy().pop()

@@ -7,35 +7,62 @@ import file_utilities
 SENTRY_FILE_NAME = '.sentry'
 
 
-work_list = []
+changed_list = []
 
 
-class WorkItem(object):
-    def __init__(self, table_name, to_do, directory, file_name, file_change):
+class Changed(object):
+    selector = {
+        ('import whole','new'): ('import whole commit', 'group'),
+
+    }
+    def __init__(self, table_name, to_do, import_directory, file_name, file_change):
         self.table_name = table_name
         self.to_do = to_do
-        self.directory = directory
+        self.import_directory = import_directory
         self.file_name = file_name
         self.file_change = file_change
-        self.file_path = os.path.join(directory, file_name)
-        work_list.append(self)
+        self.file_path = os.path.join(import_directory, file_name)
+        author = 'work.Something got from directory shares or from imports_locator spreadsheet'
+        self.command_dict = dict(author=author, source_file=file_name)
+        self.build_line = dict(filename=file_name, story=author, author=author, incorporated='2015/12/26')
+        changed_list.append(self)
+
+    @property
+    def command_keys(self):
+        if self.select in ('import whole commit', ):
+            self.command_dict['commit'] = 'group'
+        else:
+            pass
+        return self.command_dict
+
+    @property
+    def import_lines(self):
+        return file_utilities.spreadsheet_keyvalue_generator(self.file_path)
+
+    @property
+    def select(self):
+        if (self.to_do, self.file_change) in [('import whole','new'),]:
+            return 'import whole commit'
+
+
+
 
 
 def poll_imports(imports_path):
     imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
     for location in imports_gen:
         table_name, to_do, path = location['table'], location['action'], location['path']
-        new, changed, missing = take_roll_of_new_changes_and_missing(path)
+        new, different, missing = take_roll_of_new_changes_and_missing(path)
         if new:
             for file_name in new:
-                WorkItem(table_name, to_do, path, file_name, 'new')
-        if changed:
-            for file_name in changed:
-                WorkItem(table_name, to_do, path, file_name, 'changed')
+                Changed(table_name, to_do, path, file_name, 'new')
+        if different:
+            for file_name in different:
+                Changed(table_name, to_do, path, file_name, 'different')
         if missing:
             for file_name in missing:
-                WorkItem(table_name, to_do, path, file_name, 'missing')
-        if any((new, changed, missing)):
+                Changed(table_name, to_do, path, file_name, 'missing')
+        if any((new, different, missing)):
             break
 
 
