@@ -14,12 +14,6 @@ test_directory = setup_common_for_test.read_test_locations()
 imports_path = test_directory['imports_locator']
 
 
-class CanHandleTestAndDraftImportsAndMakeNeededErrorSheetsAndBuildHistory(unittest.TestCase):
-    def xtest_got_work_to_do(self):
-        self.assertFalse('In action for imports and in cursors for build history, by-line history. ')
-
-
-
 class CanProperlyHandleWholeTableImports(unittest.TestCase):
     def setUp(self):
         self.file_to_get = set()
@@ -83,7 +77,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn('source_file', vars[0])
         self.assertEqual(import_file_name, vars[0]['source_file'])
         self.assertIn('author', vars[0])
-        self.assertIn('Something got from directory shares', vars[0]['author'])
+        self.assertIn('from imports_locator spreadsheet or cloud services', vars[0]['author'])
 
 
 
