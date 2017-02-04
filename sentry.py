@@ -7,6 +7,23 @@ SENTRY_FILE_NAME = '.sentry'
 changed_list = []
 
 
+def poll_imports(imports_path):
+    imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
+    for location in imports_gen:
+        table_name, to_do, path = location['table'], location['action'], location['path']
+        new, different, missing = take_roll_of_new_changes_and_missing(path)
+        if new:
+            for file_name in new:
+                File_Is_New(table_name, to_do, path, file_name)
+        if different:
+            for file_name in different:
+                File_Is_Different(table_name, to_do, path, file_name)
+        if missing:
+            pass
+        if any((new, different)):
+            break
+
+
 class Any_Changed(object):
     COMMIT_SELECT = {'import whole': 'group', 'import_lines': 'single', 'test': False}
     def __init__(self, table_name, to_do, import_directory, file_name):
@@ -50,23 +67,6 @@ class File_Is_Different(Any_Changed):
                 # re-write mirror for any successes.  avoid doing this in batch by iterating on insert, not general insert?
                 # move or delete from where is (routine)
 
-
-
-def poll_imports(imports_path):
-    imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
-    for location in imports_gen:
-        table_name, to_do, path = location['table'], location['action'], location['path']
-        new, different, missing = take_roll_of_new_changes_and_missing(path)
-        if new:
-            for file_name in new:
-                File_Is_New(table_name, to_do, path, file_name)
-        if different:
-            for file_name in different:
-                File_Is_Different(table_name, to_do, path, file_name)
-        if missing:
-            pass
-        if any((new, different)):
-            break
 
 
 def take_roll_of_new_changes_and_missing(apath):

@@ -43,8 +43,8 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
 
     def test_double_import_whole_tables_generates_right_errors(self):
         self.assertEqual(sentry.changed_list, [])  # Verify all clear!
-        sentry.poll_imports(imports_path)
-        self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        # sentry.poll_imports(imports_path)
+        # self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         self.assertTrue(len(sentry.changed_list) == 0)  # Work done has cleared the work_list
         self.tearDown()                         # Remove import file, sentry sees, clear that seeing away
@@ -54,8 +54,8 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         to_get = filemoves.copy_alias_to_path('person_table_example', test_directory, path)
         self.file_to_get.add(to_get)
 
-        sentry.poll_imports(imports_path)
-        self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        # sentry.poll_imports(imports_path)
+        # self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         self.assertTrue(len(sentry.changed_list) == 0)  # Work done has cleared the work_list
 
@@ -68,8 +68,8 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
 
     def test_keywords_source_file_and_author_are_available_for_tables(self):
         self.assertEqual(sentry.changed_list, [])  # Verify all clear!
-        sentry.poll_imports(imports_path)
-        self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        # sentry.poll_imports(imports_path)
+        # self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
         import_file_path = self.file_to_get.copy().pop()

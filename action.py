@@ -6,11 +6,18 @@ BUILD_HISTORY_TABLE = 'build_history'
 
 
 def do_a_work_item(path_to_listings, connect):
-    if not sentry.changed_list:
-        return
-    change = sentry.changed_list.pop(0)
-    insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[change.table_name]
-    if change.action == 'import whole':
+    imports_path = path_to_listings['imports_locator']
+    sentry.poll_imports(imports_path)
+    if sentry.changed_list:
+        change = sentry.changed_list.pop(0)
+        insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[change.table_name]
+        if change.action == 'import whole':
+            return import_whole_sheet(change, insert_cmd, path_to_listings, connect)
+        elif change.action == 'import using mirror':
+            return import_line_at_a_time(change, insert_cmd, connect)
+
+
+def import_whole_sheet(change, insert_cmd, path_to_listings, connect):
         success, history = general_insert(insert_cmd, change.import_lines, connect=connect, **change.command_keys)
         if success:
             add_to_build_history(change.build_line, path_to_listings=path_to_listings, connect=connect)
@@ -18,7 +25,9 @@ def do_a_work_item(path_to_listings, connect):
         else:
             change.failure(history)
         return success, history
-    elif change.action == 'import using mirror':
+
+
+def import_line_at_a_time(change, insert_cmd, connect):
         mirror_location = 'mirror location plug'
         for one_line in change.check_against_mirror(mirror_location):
             success, history = single_insert(insert_cmd, one_line, connect=connect, **change.command_keys)
@@ -28,6 +37,7 @@ def do_a_work_item(path_to_listings, connect):
                 change.failure(history)  # history will show the error
                 break # stop the line iteration
         change.done()
+
 
 
 def add_to_build_history(build_line, path_to_listings, connect):
