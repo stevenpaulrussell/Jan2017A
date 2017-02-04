@@ -2,6 +2,7 @@ import os
 import json
 
 import file_utilities
+import filemoves
 
 SENTRY_FILE_NAME = '.sentry'
 changed_list = []
@@ -29,6 +30,7 @@ class Any_Changed(object):
     def __init__(self, table_name, to_do, import_directory, file_name):
         changed_list.append(self)
         self.table_name = table_name
+        self.file_name = file_name
         self.file_path = os.path.join(import_directory, file_name)
         author = 'hidalgo from imports_locator spreadsheet or cloud services AAA'
         self.command_keys = dict(author=author, source_file=file_name, commit=Any_Changed.COMMIT_SELECT[to_do])
@@ -45,11 +47,15 @@ class File_Is_New(Any_Changed):
     """This will make a default object, but do nothing with it for now.  Use if we want to act on missing files """
     def get_specialized(self, to_do):
         self.action = 'import whole'
-    def success(self):
-        pass
-        # move from where is to x (routine) unless this is a future add one line at a time in which case no move
+    def success(self, path_to_listings):
+        destination_alias = 'archive/{}'.format(self.table_name)
+        dest = filemoves.copy_file_path_to_alias_named_directory(self.file_path, destination_alias, path_to_listings)
+        if dest:
+            os.remove(self.file_path)
+
     def failure(self, history):
         pass
+
     def done(self):
         pass
 

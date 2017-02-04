@@ -14,16 +14,16 @@ def copy_file_path_to_alias_named_directory(source_file_path, alias, locator):
     if file_name_must_be_star != '*':
         msg = 'alias {} shows path {} filename "{}" not "*"'.format(alias, dest_path, file_name_must_be_star)
         raise FileMovesSurprise(msg)
-    return _copy_file_path_to_dir(source_file_path, dest_dir)
+    return copy_file_path_to_dir(source_file_path, dest_dir)
 
 
 def copy_alias_to_path(alias, locator, path_for_copy):
     """Copy a file named in a 'locator' spreadsheet to a directory specified by path_for_copy. Return copied to path"""
     source_path = locator[alias]
-    return _copy_file_path_to_dir(source_path, path_for_copy)
+    return copy_file_path_to_dir(source_path, path_for_copy)
 
 
-def _copy_file_path_to_dir(source_file_path, dir_path):
+def copy_file_path_to_dir(source_file_path, dir_path):
     """Common pattern used for alias and import copying """
     source_file_name = os.path.split(source_file_path)[-1]
     copied_path = os.path.join(dir_path, source_file_name)

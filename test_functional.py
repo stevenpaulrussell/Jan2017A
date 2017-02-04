@@ -10,7 +10,6 @@ import setup_common_for_test
 connect = dataqueda_constants.LOCAL
 path_to_listings = setup_common_for_test.read_test_locations()
 imports_path = path_to_listings['imports_locator']
-print('imports_path', imports_path)
 
 
 class RebuildDatabaseFromBaseDocuments(unittest.TestCase):
@@ -57,6 +56,11 @@ class InsertFromImportsSimple(unittest.TestCase):
         import_copy_to_path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
         test_spreadsheet_path = filemoves.copy_alias_to_path('person_table_example', path_to_listings,
                                                              import_copy_to_path)
+        success_dir_wildcarded = path_to_listings['archive/person']
+        success_dir = success_dir_wildcarded[:-2]
+        file_name = os.path.split(test_spreadsheet_path)[-1]
+        success_path = os.path.join(success_dir, file_name)
+        print('^^^', success_dir, test_spreadsheet_path)
 
         success, history = action.do_a_work_item(path_to_listings, connect=connect)
         (first_command, vars), first_psycop_response = history[0]
@@ -66,8 +70,9 @@ class InsertFromImportsSimple(unittest.TestCase):
         self.assertIn('INSERT INTO', first_command)
         self.assertTrue(value_mapping_as_dict.keys())
         self.assertFalse(os.path.exists(test_spreadsheet_path))  # import should have been removed
-        self.assertTrue(os.path.exists('Successful import path'))  # successful import copied here for safety
-        self.assertFalse(os.path.exists('Error path'))  # unsuccessful import copied here for work
+        self.assertTrue(os.path.exists(success_path))  # successful import copied here for safety
+
+        os.remove(success_path)
 
 
 

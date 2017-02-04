@@ -21,7 +21,7 @@ def import_whole_sheet(change, insert_cmd, path_to_listings, connect):
         success, history = general_insert(insert_cmd, change.import_lines, connect=connect, **change.command_keys)
         if success:
             add_to_build_history(change.build_line, path_to_listings=path_to_listings, connect=connect)
-            change.success()
+            change.success(path_to_listings)
         else:
             change.failure(history)
         change.done()
