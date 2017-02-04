@@ -6,8 +6,8 @@ BUILD_HISTORY_TABLE = 'build_history'
 
 
 def do_a_work_item(path_to_listings, connect):
-    imports_path = path_to_listings['imports_locator']
-    sentry.poll_imports(imports_path)
+    sentry.path_to_listings = path_to_listings
+    sentry.poll_imports()
     if sentry.changed_list:
         change = sentry.changed_list.pop(0)
         insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[change.table_name]
@@ -15,13 +15,15 @@ def do_a_work_item(path_to_listings, connect):
             return import_whole_sheet(change, insert_cmd, path_to_listings, connect)
         elif change.action == 'import using mirror':
             return import_line_at_a_time(change, insert_cmd, connect)
+        else:
+            return change
 
 
 def import_whole_sheet(change, insert_cmd, path_to_listings, connect):
         success, history = general_insert(insert_cmd, change.import_lines, connect=connect, **change.command_keys)
         if success:
             add_to_build_history(change.build_line, path_to_listings=path_to_listings, connect=connect)
-            change.success(path_to_listings)
+            change.success()
         else:
             change.failure(history)
         change.done()
@@ -35,7 +37,7 @@ def import_line_at_a_time(change, insert_cmd, connect):
             if success:
                 change.success(one_line)
             else:
-                change.failure(history)  # history will show the error
+                change.failure()  # history will show the error
                 break # stop the line iteration
         change.done()
         return success, history
@@ -46,7 +48,8 @@ def add_to_build_history(build_line, path_to_listings, connect):
     insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[BUILD_HISTORY_TABLE]
     with cursors.Commander(connect, commit='group') as cmdr:
         cmdr.do_cmd(insert_cmd, build_line)
-    print('in action.do_a_work_item.add_to_build_history, need an exception watcher on cmdr.success', cmdr.success)
+    if not cmdr.success:
+        raise cursors.CommanderException(cmdr.history)
     return
 
 

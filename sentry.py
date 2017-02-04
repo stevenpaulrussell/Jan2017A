@@ -6,9 +6,10 @@ import filemoves
 
 SENTRY_FILE_NAME = '.sentry'
 changed_list = []
+path_to_listings = None
 
-
-def poll_imports(imports_path):
+def poll_imports():
+    imports_path = path_to_listings['imports_locator']
     imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
     for location in imports_gen:
         table_name, to_do, path = location['table'], location['action'], location['path']
@@ -39,11 +40,20 @@ class Any_Changed(object):
         self.action = None
         self.get_specialized(to_do)
 
+    def gen_for_failure_spreadsheet(self, history):
+        for index, ((cmd, vars), error) in enumerate(history):
+            keyed_values = vars[0]
+            keyed_values.update(self.groom_psycopg_error_message(error))
+            yield keyed_values
+
     def groom_psycopg_error_message(self, psycopg_error_msg):
         short_error, error_detail = psycopg_error_msg.split('DETAIL:')
         short_error = short_error.replace("'", '').replace('\\n', '')
         error_detail = error_detail.replace(",", '').replace('\\n', '')
         return {'error': short_error, 'error_detail': error_detail}
+
+    def done(self):
+        pass
 
     @property
     def import_lines(self):
@@ -55,25 +65,15 @@ class File_Is_New(Any_Changed):
     def get_specialized(self, to_do):
         self.action = 'import whole'
 
-    def success(self, path_to_listings):
+    def success(self):
         destination_alias = 'archive/{}'.format(self.table_name)
         dest = filemoves.copy_file_path_to_alias_named_directory(self.file_path, destination_alias, path_to_listings)
         if dest:
             os.remove(self.file_path)
 
     def failure(self, history):
-        key_values_list = []
-        for index, ((cmd, vars), error) in enumerate(history):
-            keyed_values = vars[0]
-            keyed_values.update(self.groom_psycopg_error_message(error))
-            key_values_list.append(keyed_values)
-        fail_file_name = 'ErRoR_{}'.format(self.file_name)
-        fail_path = os.path.join(self.import_directory, fail_file_name)
-        key_value_gen = (keyed_values for keyed_values in key_values_list)
-        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(key_value_gen, fail_path)
-
-    def done(self):
-        pass
+        fail_path = os.path.join(self.import_directory, 'ErRoR_{}'.format(self.file_name))
+        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.gen_for_failure_spreadsheet(history), fail_path)
 
 
 class File_Is_Different(Any_Changed):
