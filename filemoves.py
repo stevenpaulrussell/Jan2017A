@@ -42,7 +42,7 @@ def find_unique_import_directory_matching_pattern(locator_path, **matchlist):
     """Returns path of unique import directory, or raises exception if unique not found."""
     matches = find_all_imports_lines_matching_pattern(locator_path, **matchlist)
     if len(matches) != 1:
-        msg = 'Found {}, expected exactly 1 match for {}'.format(len(matches), **matchlist)
+        msg = 'Found {}, expected exactly 1 match for {}'.format(len(matches), matchlist)
         raise FileMovesSurprise(msg)
     else:
         return matches[0]['path']

@@ -73,39 +73,3 @@ class Commander(object):
         tupleslist = self.cur.fetchall()
         return set([item[0] for item in tupleslist])
 
-
-
-
-
-
-
-
-
-
-def run_update(tablename, keyed_values_list, commit):
-    the_keys = keyed_values_list[0].keys()
-    file_header = list(the_keys) + ['message']
-    integral_list = [file_header]
-    failure_list = [file_header]
-    insert_cmdstring = read_master()[tablename].insert_cmdstring
-    cmdr = Commander()
-    for keyed_values in keyed_values_list:
-        value_list = list(keyed_values.values())
-        failure_msg = cmdr.do_cmd(insert_cmdstring, keyed_values)
-        if not failure_msg:
-            integral_list.append(value_list)
-        else:
-            value_list.append(failure_msg if len(failure_msg) < 120 else failure_msg[12:132])
-            failure_list.append(value_list)
-            integral_list.append(value_list)
-    if commit and not len(failure_list) == 1:
-        cmdr.commit()
-    return failure_list, integral_list
-
-
-def add_filename_to_build_history(file_name, story='to be added', author='to be added'):
-    cmdr = Commander()
-    insert_cmdstring = read_master()['build_history'].insert_cmdstring
-    insert_values = {'filename': file_name, 'story': story, 'author': author, 'incorporated': '2015/12/26'}
-    cmdr.do_cmd(insert_cmdstring, insert_values)
-    cmdr.commit()

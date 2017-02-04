@@ -14,8 +14,9 @@ imports_path = test_directory['imports_locator']
 
 class CanProperlyHandleWholeTableImports(unittest.TestCase):
     def setUp(self):
+        sentry.path_to_listings = test_directory
         self.file_to_get = set()
-        sentry.poll_imports(imports_path)
+        sentry.poll_imports()
         sentry.changed_list = []
         to_match = dict(table='person', action='import whole', system='steve air')
         path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
@@ -24,13 +25,16 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
 
     def tearDown(self):
         for a_file_path in self.file_to_get:
-            os.remove(a_file_path)
-        sentry.poll_imports(imports_path)
+            try:
+                os.remove(a_file_path)
+            except FileNotFoundError:
+                pass
+        sentry.poll_imports()
         sentry.changed_list = []
 
     def test_can_find_and_import_whole_tables(self):
         self.assertEqual(sentry.changed_list, [])  # Verify all clear!
-        sentry.poll_imports(imports_path)
+        sentry.poll_imports()
         self.assertTrue(len(sentry.changed_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
