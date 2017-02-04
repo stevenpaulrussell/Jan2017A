@@ -1,4 +1,4 @@
-import os.path
+import os
 import collections
 
 import xlrd
@@ -71,6 +71,7 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
     for gen_number, keyvalues in enumerate(gen_of_dicts):
         write_a_row(gen_number + 2, keyvalues.values())
     workbook.close()
+
 
 
 def gen_by_filtering_from_gen_list(a_gen, checker, action=lambda msg: 1):

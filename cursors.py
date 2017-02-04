@@ -45,9 +45,8 @@ class Commander(object):
         try:
             self.cur.execute(cmd, *myvars)
         except Exception as e:
-            msg = 'Exception "<{}>"\nPsycopg2 (cmd, vars) were cmd "<{}>". vars "<{}>"'.format(repr(e), cmd, myvars)
             self.con.rollback()
-            return msg
+            return repr(e)
         else:
             if self.my_kwds['commit'] == 'single':
                 self.con.commit()

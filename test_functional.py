@@ -60,7 +60,6 @@ class InsertFromImportsSimple(unittest.TestCase):
         success_dir = success_dir_wildcarded[:-2]
         file_name = os.path.split(test_spreadsheet_path)[-1]
         success_path = os.path.join(success_dir, file_name)
-        print('^^^', success_dir, test_spreadsheet_path)
 
         success, history = action.do_a_work_item(path_to_listings, connect=connect)
         (first_command, vars), first_psycop_response = history[0]
@@ -73,6 +72,35 @@ class InsertFromImportsSimple(unittest.TestCase):
         self.assertTrue(os.path.exists(success_path))  # successful import copied here for safety
 
         os.remove(success_path)
+
+
+    def test_failure_import_whole_sheet(self):
+        to_match = dict(table='person', action='import whole', system='steve air')
+        import_copy_to_path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
+        test_spreadsheet_path = filemoves.copy_alias_to_path('person_table_example', path_to_listings,
+                                                             import_copy_to_path)
+        success_dir_wildcarded = path_to_listings['archive/person']
+        success_dir = success_dir_wildcarded[:-2]
+        file_name = os.path.split(test_spreadsheet_path)[-1]
+        success_path = os.path.join(success_dir, file_name)
+        action.do_a_work_item(path_to_listings, connect=connect)
+        os.remove(success_path)
+        action.do_a_work_item(path_to_listings, connect=connect)
+        filemoves.copy_alias_to_path('person_table_example', path_to_listings, import_copy_to_path)
+        fail_file_name = 'ErRoR_{}'.format(file_name)
+        fail_path = os.path.join(*os.path.split(import_copy_to_path)[:-1], 'person', fail_file_name)
+
+        success, history = action.do_a_work_item(path_to_listings, connect=connect)
+
+        (first_command, vars), first_psycop_response = history[0]
+        value_mapping_as_dict = vars[0]
+
+        self.assertFalse(success)
+        self.assertIn('INSERT INTO', first_command)
+        self.assertTrue(value_mapping_as_dict.keys())
+        self.assertTrue(os.path.exists(test_spreadsheet_path))  # import is not removed
+        self.assertTrue(os.path.exists(fail_path))  # failure rewrites the import
+
 
 
 
