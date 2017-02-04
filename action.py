@@ -24,6 +24,7 @@ def import_whole_sheet(change, insert_cmd, path_to_listings, connect):
             change.success()
         else:
             change.failure(history)
+        change.done()
         return success, history
 
 
@@ -37,6 +38,7 @@ def import_line_at_a_time(change, insert_cmd, connect):
                 change.failure(history)  # history will show the error
                 break # stop the line iteration
         change.done()
+        return success, history
 
 
 
