@@ -11,8 +11,8 @@ class ActionException(Exception):
 def do_a_work_item(path_to_listings, connect):
     sentry.path_to_listings = path_to_listings
     sentry.poll_imports()
-    if sentry.changed_list:
-        change = sentry.changed_list.pop(0)
+    if sentry.work_list:
+        change = sentry.work_list.pop(0)
         insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[change.table_name]
         if change.action == 'import whole':
             return import_whole_sheet(change, insert_cmd, path_to_listings, connect)

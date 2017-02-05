@@ -5,7 +5,7 @@ import file_utilities
 import filemoves
 
 SENTRY_FILE_NAME = '.sentry'
-changed_list = []
+work_list = []
 path_to_listings = None
 
 class SentryException(Exception):
@@ -16,25 +16,25 @@ def poll_imports():
     imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
     for location in imports_gen:
         new, different, missing = take_roll_of_new_changes_and_missing(location['path'])
-        work_type = enlist_work(new, different, missing, location)
         if any((new, different)):
+            enlist_work(new, different, location)
             break
 
 
-def enlist_work(new, different, missing, location):
+def enlist_work(new, different, location):
     table_name, path = location['table'], location['path']
     if location['action'] == 'import whole':
         if different:
             raise SentryException('{} changed in {} not allowed'.format(different, path))
         for file_name in new:
-            changed_list.append(Whole_Spreadsheet_Imports(table_name, 'import whole', path, file_name))
-        return 'import whole'
+            work_list.append(Whole_Spreadsheet_Imports(table_name, 'import whole', path, file_name))
+        return
     if location['action'] == 'import by line':
         for file_name in new:
-            changed_list.append(Line_At_A_Time_Imports(table_name, 'import by line', path, file_name))
+            work_list.append(Line_At_A_Time_Imports(table_name, 'import by line', path, file_name))
         for file_name in different:
-            changed_list.append(Line_At_A_Time_Imports(table_name, 'import by line', path, file_name))
-        return 'import by line'
+            work_list.append(Line_At_A_Time_Imports(table_name, 'import by line', path, file_name))
+        return
     raise SentryException('to_do "{}" in {} not allowed'.format(location['action'], location['path']))
 
 
