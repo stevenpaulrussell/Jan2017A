@@ -5,6 +5,9 @@ import file_utilities
 import filemoves
 
 SENTRY_FILE_NAME = '.sentry'
+IMPORT_WHOLE_ACTION_NAME = 'import whole'
+IMPORT_BY_LINE_ACTION_NAME = 'import by line'
+
 work_list = []
 path_to_listings = None
 
@@ -23,9 +26,9 @@ def poll_imports():
 
 
 def enlist_work(new, different, import_listing):
-    if import_listing['action'] == 'import whole':
+    if import_listing['action'] == IMPORT_WHOLE_ACTION_NAME:
         enlist_whole_table_work(new, different, import_listing)
-    elif import_listing['action'] == 'import by line':
+    elif import_listing['action'] == IMPORT_BY_LINE_ACTION_NAME:
         enlist_line_at_a_time_work(new, different, import_listing)
     else:
         raise SentryException('to_do "{}" in {} not allowed'.format(import_listing['action'], import_listing['path']))
@@ -34,7 +37,7 @@ def enlist_work(new, different, import_listing):
 def enlist_whole_table_work(new, different, import_listing):
     table, import_directory = import_listing['table'], import_listing['path']
     for import_file_name in new:
-        work_list.append(Whole_Spreadsheet_Imports(table, 'import whole', import_directory, import_file_name))
+        work_list.append(Whole_Spreadsheet_Imports(table, import_directory, import_file_name))
     if different:
         raise SentryException('{} changed in {} not allowed'.format(different, import_directory))
 
@@ -42,22 +45,21 @@ def enlist_whole_table_work(new, different, import_listing):
 def enlist_line_at_a_time_work(new, different, import_listing):
     table, import_directory = import_listing['table'], import_listing['path']
     for import_file_name in new:
-        work_list.append(Line_At_A_Time_Imports(table, 'import by line', import_directory, import_file_name))
+        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
     for import_file_name in different:
-        work_list.append(Line_At_A_Time_Imports(table, 'import by line', import_directory, import_file_name))
+        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
 
 
 class General_Imports(object):
-    COMMIT_SELECT = {'import whole': 'group', 'import by line': 'single', 'test': False}
-    def __init__(self, table_name, to_do, import_directory, file_name):
+    COMMIT_SELECT = {IMPORT_WHOLE_ACTION_NAME: 'group', IMPORT_BY_LINE_ACTION_NAME: 'single', 'test': False}
+    def __init__(self, table_name, import_directory, file_name):
         self.table_name = table_name
         self.import_directory = import_directory
         self.file_name = file_name
         self.file_path = os.path.join(import_directory, file_name)
         author = 'from spreadsheet or cloud AAA'
-        self.command_keys = dict(author=author, source_file=file_name, commit=General_Imports.COMMIT_SELECT[to_do])
+        self.command_keys = dict(author=author, source_file=file_name, commit=self.commit)
         self.build_line = dict(filename=file_name, story=author, author=author, incorporated='2015/12/26')
-        self.get_specialized(to_do)
 
     def gen_for_failure_spreadsheet(self, history):
         for index, ((cmd, vars), error) in enumerate(history):
@@ -77,9 +79,10 @@ class General_Imports(object):
 
 
 class Whole_Spreadsheet_Imports(General_Imports):
-    """This will make a default object, but do nothing with it for now.  Use if we want to act on missing files """
-    def get_specialized(self, to_do):
-        self.action = 'import whole'
+    def __init__(self, table_name, import_directory, file_name):
+        self.action = IMPORT_WHOLE_ACTION_NAME
+        self.commit = General_Imports.COMMIT_SELECT[IMPORT_WHOLE_ACTION_NAME]
+        super(Whole_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
 
     def success(self):
         destination_alias = 'archive/{}'.format(self.table_name)
@@ -93,12 +96,13 @@ class Whole_Spreadsheet_Imports(General_Imports):
 
 
 class Line_At_A_Time_Imports(General_Imports):
-    """This will make a default object, but do nothing with it for now.  Use if we want to act on missing files """
-    def get_specialized(self, to_do):
-        self.action = 'import by line'
+    def __init__(self, table_name, import_directory, file_name):
+        self.action = IMPORT_BY_LINE_ACTION_NAME
+        self.commit = General_Imports.COMMIT_SELECT[IMPORT_BY_LINE_ACTION_NAME]
         self.previously_imported_lines = []
         self.newly_imported_lines = []
         self.failed_line = None
+        super(Line_At_A_Time_Imports, self).__init__(table_name, import_directory, file_name)
 
     def success(self, one_line):
         one_line.update({'error': ' ', 'error_detail': ' '})
