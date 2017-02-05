@@ -1,5 +1,6 @@
 import os
 import json
+from collections import OrderedDict
 
 import file_utilities
 import filemoves
@@ -91,6 +92,8 @@ class Line_At_A_Time_Imports(General_Imports):
         for index, a_line in enumerate(self.import_lines):
             if index > pass_by:
                 remaining.append(a_line)
+        print('see sentry.Line_At_A_Time_Imports.update import file lines')
+        remaining = remaining or [OrderedDict([(key, ' ') for key in self.newly_imported_lines[0].keys()])]
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
 
     def update_archive_file(self):
