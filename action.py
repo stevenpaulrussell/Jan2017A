@@ -45,7 +45,6 @@ def import_line_at_a_time(change, insert_cmd, connect):
         return success, history
 
 
-
 def add_to_build_history(build_line, path_to_listings, connect):
     insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[BUILD_HISTORY_TABLE]
     with cursors.Commander(connect, commit='group') as cmdr:

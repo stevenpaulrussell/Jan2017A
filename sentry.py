@@ -8,23 +8,31 @@ SENTRY_FILE_NAME = '.sentry'
 changed_list = []
 path_to_listings = None
 
+class SentryException(Exception):
+    """Placeholder for telemetry and also for debugging"""
+
 def poll_imports():
     imports_path = path_to_listings['imports_locator']
     imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
     for location in imports_gen:
         table_name, to_do, path = location['table'], location['action'], location['path']
         new, different, missing = take_roll_of_new_changes_and_missing(path)
-        if new and to_do == 'import whole':
-            for file_name in new:
-                Whole_Spreadsheet_Imports(table_name, to_do, path, file_name)
-        if new and to_do == 'import by line':
-            for file_name in new:
-                Line_At_A_Time_Imports(table_name, to_do, path, file_name)
-        if different and to_do == 'import by line':
-            for file_name in different:
-                Line_At_A_Time_Imports(table_name, to_do, path, file_name)
-        if missing:
-            pass
+        if to_do == 'import whole':
+            if new:
+                for file_name in new:
+                    Whole_Spreadsheet_Imports(table_name, to_do, path, file_name)
+            if different:
+                mystring = 'sentry.poll_imports seeing file "{}" change in directory "{}". New files only'
+                raise SentryException(mystring.format(different, path))
+        elif to_do == 'import by line':
+            if new or different:
+                for file_name in new:
+                    Line_At_A_Time_Imports(table_name, to_do, path, file_name)
+                for file_name in different:
+                    Line_At_A_Time_Imports(table_name, to_do, path, file_name)
+        else:
+            msg = 'sentry.poll_imports seeing to_do "{}", not programmed to handle this'.format(to_do)
+            raise SentryException(msg)
         if any((new, different)):
             break
 
