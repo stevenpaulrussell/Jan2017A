@@ -15,32 +15,32 @@ def poll_imports():
     imports_path = path_to_listings['imports_locator']
     imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
     for location in imports_gen:
-        table_name, to_do, path = location['table'], location['action'], location['path']
-        new, different, missing = take_roll_of_new_changes_and_missing(path)
-        if to_do == 'import whole':
-            if new:
-                for file_name in new:
-                    Whole_Spreadsheet_Imports(table_name, to_do, path, file_name)
-            if different:
-                mystring = 'sentry.poll_imports seeing file "{}" change in directory "{}". New files only'
-                raise SentryException(mystring.format(different, path))
-        elif to_do == 'import by line':
-            if new or different:
-                for file_name in new:
-                    Line_At_A_Time_Imports(table_name, to_do, path, file_name)
-                for file_name in different:
-                    Line_At_A_Time_Imports(table_name, to_do, path, file_name)
-        else:
-            msg = 'sentry.poll_imports seeing to_do "{}", not programmed to handle this'.format(to_do)
-            raise SentryException(msg)
+        new, different, missing = take_roll_of_new_changes_and_missing(location['path'])
+        work_type = enlist_work(new, different, missing, location)
         if any((new, different)):
             break
+
+
+def enlist_work(new, different, missing, location):
+    table_name, path = location['table'], location['path']
+    if location['action'] == 'import whole':
+        if different:
+            raise SentryException('{} changed in {} not allowed'.format(different, path))
+        for file_name in new:
+            changed_list.append(Whole_Spreadsheet_Imports(table_name, 'import whole', path, file_name))
+        return 'import whole'
+    if location['action'] == 'import by line':
+        for file_name in new:
+            changed_list.append(Line_At_A_Time_Imports(table_name, 'import by line', path, file_name))
+        for file_name in different:
+            changed_list.append(Line_At_A_Time_Imports(table_name, 'import by line', path, file_name))
+        return 'import by line'
+    raise SentryException('to_do "{}" in {} not allowed'.format(location['action'], location['path']))
 
 
 class Any_Changed(object):
     COMMIT_SELECT = {'import whole': 'group', 'import by line': 'single', 'test': False}
     def __init__(self, table_name, to_do, import_directory, file_name):
-        changed_list.append(self)
         self.table_name = table_name
         self.import_directory = import_directory
         self.file_name = file_name
