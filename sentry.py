@@ -11,43 +11,9 @@ IMPORT_BY_LINE_ACTION_NAME = 'import by line'
 work_list = []
 path_to_listings = None
 
+
 class SentryException(Exception):
     """Placeholder for telemetry and also for debugging"""
-
-
-def poll_imports():
-    path_to_imports_listings = path_to_listings['imports_locator']
-    import_listings = file_utilities.spreadsheet_keyvalue_generator(path_to_imports_listings)
-    for import_listing in import_listings:
-        new, different, missing = take_roll_of_new_changes_and_missing(import_listing['path'])
-        if any((new, different)):
-            enlist_work(new, different, import_listing)
-            break
-
-
-def enlist_work(new, different, import_listing):
-    if import_listing['action'] == IMPORT_WHOLE_ACTION_NAME:
-        enlist_whole_table_work(new, different, import_listing)
-    elif import_listing['action'] == IMPORT_BY_LINE_ACTION_NAME:
-        enlist_line_at_a_time_work(new, different, import_listing)
-    else:
-        raise SentryException('to_do "{}" in {} not allowed'.format(import_listing['action'], import_listing['path']))
-
-
-def enlist_whole_table_work(new, different, import_listing):
-    table, import_directory = import_listing['table'], import_listing['path']
-    for import_file_name in new:
-        work_list.append(Whole_Spreadsheet_Imports(table, import_directory, import_file_name))
-    if different:
-        raise SentryException('{} changed in {} not allowed'.format(different, import_directory))
-
-
-def enlist_line_at_a_time_work(new, different, import_listing):
-    table, import_directory = import_listing['table'], import_listing['path']
-    for import_file_name in new:
-        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
-    for import_file_name in different:
-        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
 
 
 class General_Imports(object):
@@ -134,6 +100,40 @@ class Line_At_A_Time_Imports(General_Imports):
         to_rewrite = (line for line in self.previously_imported_lines + self.newly_imported_lines)
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(to_rewrite, archive_path)
 
+
+def poll_imports():
+    path_to_imports_listings = path_to_listings['imports_locator']
+    import_listings = file_utilities.spreadsheet_keyvalue_generator(path_to_imports_listings)
+    for import_listing in import_listings:
+        new, different, missing = take_roll_of_new_changes_and_missing(import_listing['path'])
+        if any((new, different)):
+            enlist_work(new, different, import_listing)
+            break
+
+
+def enlist_work(new, different, import_listing):
+    if import_listing['action'] == IMPORT_WHOLE_ACTION_NAME:
+        enlist_whole_table_work(new, different, import_listing)
+    elif import_listing['action'] == IMPORT_BY_LINE_ACTION_NAME:
+        enlist_line_at_a_time_work(new, different, import_listing)
+    else:
+        raise SentryException('to_do "{}" in {} not allowed'.format(import_listing['action'], import_listing['path']))
+
+
+def enlist_whole_table_work(new, different, import_listing):
+    table, import_directory = import_listing['table'], import_listing['path']
+    for import_file_name in new:
+        work_list.append(Whole_Spreadsheet_Imports(table, import_directory, import_file_name))
+    if different:
+        raise SentryException('{} changed in {} not allowed'.format(different, import_directory))
+
+
+def enlist_line_at_a_time_work(new, different, import_listing):
+    table, import_directory = import_listing['table'], import_listing['path']
+    for import_file_name in new:
+        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
+    for import_file_name in different:
+        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
 
 
 def take_roll_of_new_changes_and_missing(apath):
