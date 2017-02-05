@@ -11,6 +11,7 @@ path_to_listings = None
 class SentryException(Exception):
     """Placeholder for telemetry and also for debugging"""
 
+
 def poll_imports():
     imports_path = path_to_listings['imports_locator']
     imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
@@ -38,7 +39,7 @@ def enlist_work(new, different, location):
     raise SentryException('to_do "{}" in {} not allowed'.format(location['action'], location['path']))
 
 
-class Any_Changed(object):
+class General_Imports(object):
     COMMIT_SELECT = {'import whole': 'group', 'import by line': 'single', 'test': False}
     def __init__(self, table_name, to_do, import_directory, file_name):
         self.table_name = table_name
@@ -46,7 +47,7 @@ class Any_Changed(object):
         self.file_name = file_name
         self.file_path = os.path.join(import_directory, file_name)
         author = 'from spreadsheet or cloud AAA'
-        self.command_keys = dict(author=author, source_file=file_name, commit=Any_Changed.COMMIT_SELECT[to_do])
+        self.command_keys = dict(author=author, source_file=file_name, commit=General_Imports.COMMIT_SELECT[to_do])
         self.build_line = dict(filename=file_name, story=author, author=author, incorporated='2015/12/26')
         self.get_specialized(to_do)
 
@@ -67,7 +68,7 @@ class Any_Changed(object):
         return file_utilities.spreadsheet_keyvalue_generator(self.file_path)
 
 
-class Whole_Spreadsheet_Imports(Any_Changed):
+class Whole_Spreadsheet_Imports(General_Imports):
     """This will make a default object, but do nothing with it for now.  Use if we want to act on missing files """
     def get_specialized(self, to_do):
         self.action = 'import whole'
@@ -83,7 +84,7 @@ class Whole_Spreadsheet_Imports(Any_Changed):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.gen_for_failure_spreadsheet(history), fail_path)
 
 
-class Line_At_A_Time_Imports(Any_Changed):
+class Line_At_A_Time_Imports(General_Imports):
     """This will make a default object, but do nothing with it for now.  Use if we want to act on missing files """
     def get_specialized(self, to_do):
         self.action = 'import by line'
