@@ -8,8 +8,9 @@ SENTRY_FILE_NAME = '.sentry'
 IMPORT_WHOLE_ACTION_NAME = 'import whole'
 IMPORT_BY_LINE_ACTION_NAME = 'import by line'
 
-work_list = []
-path_to_listings = None
+
+path_to_listings = None     # Set by program importing this file
+work_list = []              # Read by program importing this file
 
 
 class SentryException(Exception):
