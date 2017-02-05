@@ -4,6 +4,9 @@ import sql_command_library
 
 BUILD_HISTORY_TABLE = 'build_history'
 
+class ActionException(Exception):
+    """For help with debugging fow now """
+
 
 def do_a_work_item(path_to_listings, connect):
     sentry.path_to_listings = path_to_listings
@@ -13,10 +16,11 @@ def do_a_work_item(path_to_listings, connect):
         insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[change.table_name]
         if change.action == 'import whole':
             return import_whole_sheet(change, insert_cmd, path_to_listings, connect)
-        elif change.action == 'import using mirror':
+        elif change.action == 'import by line':
             return import_line_at_a_time(change, insert_cmd, connect)
         else:
-            return change
+            msg = 'change.action "{}" not recognized'.format(change.action)
+            raise ActionException(msg)
 
 
 def import_whole_sheet(change, insert_cmd, path_to_listings, connect):
@@ -26,18 +30,16 @@ def import_whole_sheet(change, insert_cmd, path_to_listings, connect):
             change.success()
         else:
             change.failure(history)
-        change.done()
         return success, history
 
 
 def import_line_at_a_time(change, insert_cmd, connect):
-        mirror_location = 'mirror location plug'
-        for one_line in change.check_against_mirror(mirror_location):
+        for one_line in change.import_lines:
             success, history = single_insert(insert_cmd, one_line, connect=connect, **change.command_keys)
             if success:
                 change.success(one_line)
             else:
-                change.failure()  # history will show the error
+                change.failure(history)  # history will show the error
                 break # stop the line iteration
         change.done()
         return success, history

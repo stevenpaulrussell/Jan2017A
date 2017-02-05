@@ -125,10 +125,10 @@ class InsertFromImportsIncrementally(unittest.TestCase):
                 filepath = os.path.join(this_path, filename)
                 os.remove(filepath)
 
-    def test_incremental_no_errors(self):
-        to_match = dict(table='person', action='import using mirror', system='steve air')
+    def test_incremental_with_errors(self):
+        to_match = dict(table='person', action='import by line', system='steve air')
         import_directory = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        spreadsheet_path = filemoves.copy_alias_to_path('person_table_example', path_to_listings, import_directory)
+        spreadsheet_path = filemoves.copy_alias_to_path('person_draft_error', path_to_listings, import_directory)
         spreadsheet_name = os.path.split(spreadsheet_path)[-1]
         success_dir_wildcarded = path_to_listings['archive/person']
         success_dir = success_dir_wildcarded[:-2]
@@ -138,13 +138,12 @@ class InsertFromImportsIncrementally(unittest.TestCase):
         (first_command, vars), first_psycop_response = history[0]
         value_mapping_as_dict = vars[0]
 
-        self.assertTrue(success)
+        self.assertFalse(success)
         self.assertIn('INSERT INTO', first_command)
         self.assertTrue(value_mapping_as_dict.keys())
-        self.assertFalse(os.path.exists(spreadsheet_path))  # import should have been removed
+        self.assertTrue(os.path.exists(spreadsheet_path))  # import file remains but is changed
         self.assertTrue(os.path.exists(success_path))  # successful import copied here for safety
 
-        os.remove(success_path)
 
 
 

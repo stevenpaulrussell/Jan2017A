@@ -14,12 +14,15 @@ def poll_imports():
     for location in imports_gen:
         table_name, to_do, path = location['table'], location['action'], location['path']
         new, different, missing = take_roll_of_new_changes_and_missing(path)
-        if new:
+        if new and to_do == 'import whole':
             for file_name in new:
-                File_Is_New(table_name, to_do, path, file_name)
-        if different:
+                Whole_Spreadsheet_Imports(table_name, to_do, path, file_name)
+        if new and to_do == 'import by line':
+            for file_name in new:
+                Line_At_A_Time_Imports(table_name, to_do, path, file_name)
+        if different and to_do == 'import by line':
             for file_name in different:
-                File_Is_Different(table_name, to_do, path, file_name)
+                Line_At_A_Time_Imports(table_name, to_do, path, file_name)
         if missing:
             pass
         if any((new, different)):
@@ -27,17 +30,16 @@ def poll_imports():
 
 
 class Any_Changed(object):
-    COMMIT_SELECT = {'import whole': 'group', 'import_lines': 'single', 'test': False}
+    COMMIT_SELECT = {'import whole': 'group', 'import by line': 'single', 'test': False}
     def __init__(self, table_name, to_do, import_directory, file_name):
         changed_list.append(self)
         self.table_name = table_name
         self.import_directory = import_directory
         self.file_name = file_name
         self.file_path = os.path.join(import_directory, file_name)
-        author = 'hidalgo from imports_locator spreadsheet or cloud services AAA'
+        author = 'from spreadsheet or cloud AAA'
         self.command_keys = dict(author=author, source_file=file_name, commit=Any_Changed.COMMIT_SELECT[to_do])
         self.build_line = dict(filename=file_name, story=author, author=author, incorporated='2015/12/26')
-        self.action = None
         self.get_specialized(to_do)
 
     def gen_for_failure_spreadsheet(self, history):
@@ -52,15 +54,12 @@ class Any_Changed(object):
         error_detail = error_detail.replace(",", '').replace('\\n', '')
         return {'error': short_error, 'error_detail': error_detail}
 
-    def done(self):
-        pass
-
     @property
     def import_lines(self):
         return file_utilities.spreadsheet_keyvalue_generator(self.file_path)
 
 
-class File_Is_New(Any_Changed):
+class Whole_Spreadsheet_Imports(Any_Changed):
     """This will make a default object, but do nothing with it for now.  Use if we want to act on missing files """
     def get_specialized(self, to_do):
         self.action = 'import whole'
@@ -76,18 +75,43 @@ class File_Is_New(Any_Changed):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.gen_for_failure_spreadsheet(history), fail_path)
 
 
-class File_Is_Different(Any_Changed):
+class Line_At_A_Time_Imports(Any_Changed):
     """This will make a default object, but do nothing with it for now.  Use if we want to act on missing files """
     def get_specialized(self, to_do):
-        self.action = 'import using mirror'
-    def success(self):
-        pass # store the success
+        self.action = 'import by line'
+        self.previously_imported_lines = []
+        self.newly_imported_lines = []
+        self.failed_line = None
+
+    def success(self, one_line):
+        one_line.update({'error': ' ', 'error_detail': ' '})
+        self.newly_imported_lines.append(one_line)
+
     def failure(self, history):
-        pass
+        (cmd, vars), error = history[0]
+        self.failed_line = vars[0]
+        self.failed_line.update(self.groom_psycopg_error_message(error))
+
     def done(self):
-        pass
-                # re-write mirror for any successes.  avoid doing this in batch by iterating on insert, not general insert?
-                # move or delete from where is (routine)
+        self.update_import_file()
+        self.update_archive_file()
+
+    def update_import_file(self):
+        remaining = [self.failed_line] if self.failed_line else []
+        pass_by = len(self.newly_imported_lines)
+        for index, a_line in enumerate(self.import_lines):
+            if index > pass_by:
+                remaining.append(a_line)
+        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
+
+    def update_archive_file(self):
+        archive_directory_alias = 'archive/{}'.format(self.table_name)
+        archive_directory_path = path_to_listings[archive_directory_alias][:-2]
+        archive_path = os.path.join(archive_directory_path, self.file_name)
+        if os.path.exists(archive_path):
+            self.previously_imported_lines = [l for l in file_utilities.spreadsheet_keyvalue_generator(archive_path)]
+        to_rewrite = (line for line in self.previously_imported_lines + self.newly_imported_lines)
+        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(to_rewrite, archive_path)
 
 
 
@@ -113,7 +137,6 @@ def get_current_file_stats(apath):
         if file_name[0] == '.':
             continue
         if 'ErRoR_' in file_name:
-            print('sentry sees {}'.format(file_name))
             continue
         current_file_data[file_name] = os.stat(os.path.join(apath, file_name)).st_mtime
     return current_file_data
