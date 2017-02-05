@@ -18,6 +18,7 @@ class SentryException(Exception):
 
 
 class General_Imports(object):
+    """Super class holding logic and variable for doing psycopg2 sql imports using spreadsheets"""
     COMMIT_SELECT = {IMPORT_WHOLE_ACTION_NAME: 'group', IMPORT_BY_LINE_ACTION_NAME: 'single', 'test': False}
     def __init__(self, table_name, import_directory, file_name):
         self.table_name = table_name
