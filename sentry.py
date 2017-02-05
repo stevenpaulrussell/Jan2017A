@@ -81,7 +81,7 @@ class General_Imports(object):
 class Whole_Spreadsheet_Imports(General_Imports):
     def __init__(self, table_name, import_directory, file_name):
         self.action = IMPORT_WHOLE_ACTION_NAME
-        self.commit = General_Imports.COMMIT_SELECT[IMPORT_WHOLE_ACTION_NAME]
+        self.commit = General_Imports.COMMIT_SELECT[self.action]
         super(Whole_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
 
     def success(self):
@@ -98,7 +98,7 @@ class Whole_Spreadsheet_Imports(General_Imports):
 class Line_At_A_Time_Imports(General_Imports):
     def __init__(self, table_name, import_directory, file_name):
         self.action = IMPORT_BY_LINE_ACTION_NAME
-        self.commit = General_Imports.COMMIT_SELECT[IMPORT_BY_LINE_ACTION_NAME]
+        self.commit = General_Imports.COMMIT_SELECT[self.action]
         self.previously_imported_lines = []
         self.newly_imported_lines = []
         self.failed_line = None
