@@ -77,6 +77,12 @@ def make_database_views(path_to_listings, connect):
     return success, history
 
 
+def run_database_queries(path_to_listings, connect):
+    query_builder = sql_command_library.read_query_creation_commands(path_to_listings)
+    success, history = run_database_commands_as_group(query_builder, connect, commit='group')
+    return success, history
+
+
 def general_insert(insert_cmd, import_lines, commit, connect, **kwds):
     with cursors.Commander(connect, commit=commit, **kwds) as cmdr:
         for one_line in import_lines:
@@ -105,3 +111,52 @@ def run_database_commands_as_group(builder, connect, commit):
         for cmdstring in builder.values():
             cmdr.do_cmd(cmdstring)
     return cmdr.success, cmdr.history
+
+
+
+
+def make_queries(local_connect):
+    message_list = ['Running queries']
+    report_dirname = 'Reports'
+    cmdr = Commander(DATABASENAME, local_connect)
+    query_cmds = read_queries(DATAQUEDA_AWS_BUCKET)
+    for a_query_name in query_cmds.keys():
+        message_list.append(a_query_name)
+        create_query_cmd_string = query_cmds[a_query_name].create_query_cmd_string
+        possible_error = cmdr.do_cmd(create_query_cmd_string)
+        if possible_error:
+            message_list.append(possible_error)
+            continue
+        try:
+            results = cmdr.cur.fetchall()
+        except Exception as E:
+            message_list.append(repr(E))
+            continue
+        report_filename = '{}.xlsx'.format(a_query_name)  # just the query name.. for now!
+        report_path = os.path.join(local_report_dir, report_filename)
+        make_excel_report(report_path, create_query_cmd_string, results)
+        aws.move_local_file_to_s3(report_path, DATAQUEDA_AWS_BUCKET, '{}/{}'.format(report_dirname, report_filename))
+        message_list.append('Successfully wrote {} to aws'.format(report_filename))
+    cmdr.close()
+    write_action_result_to_aws(message_list, 'make_queries_result.txt')
+
+
+def make_excel_report(filepath, query_cmd, results):
+    first_line = query_cmd.split('\n')[0]
+    query_headers = extract_lower_case_words(first_line)
+    list_of_lists = [query_headers]
+    for one_line in results:
+        list_of_lists += [list(one_line)]
+    excels.write_lists_to_excel(filepath, list_of_lists)
+
+
+def extract_lower_case_words(astring):
+    """A helper routine solely for make_excel_report"""
+    query_headers = []
+    for sub_string in astring.split():
+        character_list = [character for character in sub_string if character.islower()]
+        if character_list:
+            query_headers.append(''.join(character_list))
+    return query_headers
+
+
