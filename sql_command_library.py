@@ -20,8 +20,10 @@ def read_view_creation_commands(my_directory):
 
 
 def read_query_creation_commands(my_directory):
-    return read_cmds_as_list(my_directory['create_query_cmds'])
-
+    query_command_list = read_cmds_as_list(my_directory['create_query_cmds'])
+    query_command_list.update(read_cmds_as_list(my_directory['view_as_query_cmds']))
+    query_command_list.update(read_cmds_as_list(my_directory['table_as_query_cmds']))
+    return query_command_list
 
 def read_cmds_as_list(my_path):
     wanted = collections.OrderedDict()
@@ -68,6 +70,7 @@ def write_query_creation_commands(my_directory):
 def write_cmd_string(item_name, my_path, command_string):
     with open(my_path, 'a') as fp:
         fp.write('{}\n{}\n\n'.format(item_name, command_string))
+
 
 def clean_and_return_path(my_directory, alias):
     my_path = my_directory[alias]
