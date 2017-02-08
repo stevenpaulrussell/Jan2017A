@@ -20,9 +20,9 @@ def read_view_creation_commands(my_directory):
 
 
 def read_query_creation_commands(my_directory):
-    query_command_list = read_cmds_as_list(my_directory['create_query_cmds'])
-    query_command_list.update(read_cmds_as_list(my_directory['view_as_query_cmds']))
-    query_command_list.update(read_cmds_as_list(my_directory['table_as_query_cmds']))
+    query_command_list = collections.OrderedDict()
+    for query_file in ('table_as_query_cmds', 'view_as_query_cmds', 'create_query_cmds'):
+        query_command_list.update(read_cmds_as_list(my_directory[query_file]))
     return query_command_list
 
 def read_cmds_as_list(my_path):

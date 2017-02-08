@@ -72,6 +72,8 @@ class InsertFromImportsSimple(unittest.TestCase):
 
         os.remove(success_path)
 
+        action.run_database_queries(path_to_listings, connect)
+
 
     def test_failure_import_whole_sheet(self):
         to_match = dict(table='person', action='import whole', system='steve air')

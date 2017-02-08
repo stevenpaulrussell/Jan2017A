@@ -79,8 +79,21 @@ def make_database_views(path_to_listings, connect):
 
 def run_database_queries(path_to_listings, connect):
     query_builder = sql_command_library.read_query_creation_commands(path_to_listings)
-    success, history = run_database_commands_as_group(query_builder, connect, commit='group')
-    return success, history
+    for query_name, query_string in query_builder.items():
+        with cursors.Commander(connect) as cmdr:
+            cmdr.do_cmd(query_string)
+            issues = cmdr.result_history
+            if any(issues):
+                print('{} ---> {}'.format(query_name, issues))
+            else:
+                query_result = cmdr.cur.fetchall()
+                if query_result:
+                    print('\n{}'.format(query_name))
+                    print(query_string)
+                    print(query_result)
+                    print()
+                else:
+                    print(query_name)
 
 
 def general_insert(insert_cmd, import_lines, commit, connect, **kwds):
