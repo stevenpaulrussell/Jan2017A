@@ -80,18 +80,21 @@ def make_database_views(path_to_listings, connect):
 
 
 def run_database_queries(path_to_listings, connect):
+    troubles = []
     query_builder = sql_command_library.read_query_creation_commands(path_to_listings)
     for query_name, query_string in query_builder.items():
         with cursors.Commander(connect) as cmdr:
             cmdr.do_query(query_string)
         success, history, query_response = cmdr.success, cmdr.history, cmdr.query_response_gen
-
-        print('\n{}'.format(query_name))
         if success:
-            for item in query_response:
-                print(item)
+            lines = [x for x in query_response]
+            if len(lines) > 1:
+                print('\nWould write {} report for {}\n{}\n'.format(len(lines), query_name, lines))
+            else:
+                print('{} delete'.format(query_name))
         else:
-            print('history {}\n'.format(history))
+            troubles.append(history)
+    print('\nWrite trouble report {}'.format(troubles))
 
 
 
