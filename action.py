@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import sentry
 import cursors
 import sql_command_library
@@ -88,12 +90,16 @@ def run_database_queries(path_to_listings, connect):
             else:
                 query_result = cmdr.cur.fetchall()
                 if query_result:
+                    keys = query_string.split('\n')[0].split('SELECT')[-1].split(',')
+                    my_gen = (OrderedDict(zip(keys, line)) for line in query_result)
                     print('\n{}'.format(query_name))
-                    print(query_string)
-                    print(query_result)
-                    print()
+                    for item in my_gen:
+                        print(item)
                 else:
-                    print(query_name)
+                    print(query_name, 'null')
+        success, history = cmdr.success, cmdr.history
+        print('success', success)
+        print('history {}\n'.format(history))
 
 
 def general_insert(insert_cmd, import_lines, commit, connect, **kwds):
