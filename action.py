@@ -83,23 +83,16 @@ def run_database_queries(path_to_listings, connect):
     query_builder = sql_command_library.read_query_creation_commands(path_to_listings)
     for query_name, query_string in query_builder.items():
         with cursors.Commander(connect) as cmdr:
-            cmdr.do_cmd(query_string)
-            issues = cmdr.result_history
-            if any(issues):
-                print('{} ---> {}'.format(query_name, issues))
-            else:
-                query_result = cmdr.cur.fetchall()
-                if query_result:
-                    keys = query_string.split('\n')[0].split('SELECT')[-1].split(',')
-                    my_gen = (OrderedDict(zip(keys, line)) for line in query_result)
-                    print('\n{}'.format(query_name))
-                    for item in my_gen:
-                        print(item)
-                else:
-                    print(query_name, 'null')
-        success, history = cmdr.success, cmdr.history
-        print('success', success)
-        print('history {}\n'.format(history))
+            cmdr.do_query(query_string)
+        success, history, query_response = cmdr.success, cmdr.history, cmdr.query_response_gen
+
+        print('\n{}'.format(query_name))
+        if success:
+            for item in query_response:
+                print(item)
+        else:
+            print('history {}\n'.format(history))
+
 
 
 def general_insert(insert_cmd, import_lines, commit, connect, **kwds):
