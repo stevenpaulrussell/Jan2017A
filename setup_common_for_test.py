@@ -28,4 +28,45 @@ def read_test_locations():
         test_locations[alias] = os.path.join(info['path'], info['filename'])
     return test_locations
 
+def clean_directories():
+    print('\n{}\nClean directories in test_locations in setup_common_for_test'.format('*'*8))
+    keepers = set()
+    for alias, details in test_directory.items():
+        if details['filename'] != '*':
+            keepers.add(os.path.join(details['path'], details['filename']))
+    for alias, details in test_directory.items():
+        if details['filename'] == '*':
+            a_path = details['path']
+            print('\n\t{}'.format(alias))
+            this_path, dirs, files = os.walk(a_path).__next__()
+            for filename in files:
+                if filename[0] in ('.', '~'):
+                    print('\t\tSkipping {}'.format(filename, ))
+                    continue
+                filepath = os.path.join(this_path, filename)
+                if filepath in keepers:
+                    print('\t\t*** Skipping {}.  Is in Keepers!!'.format(filename, ))
+                    continue
+                os.remove(filepath)
+                print('\t\tx -> {}'.format(filename, ))
+    print('\nClean imports directories')
+    path_to_listings = read_test_locations()
+    imports_path = path_to_listings['imports_locator']
+    imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
+    for location in imports_gen:
+        directory_path = location['path']
+        print('\n\t{}'.format(directory_path))
+        this_path, dirs, files = os.walk(directory_path).__next__()
+        for filename in files:
+            if filename[0] in ('.', '~') and filename != '.sentry':
+                print('\t\tSkipping {}'.format(filename, ))
+                continue
+            filepath = os.path.join(this_path, filename)
+            if filepath in keepers:
+                print('\t\t*** Skipping {}.  Is in Keepers!!'.format(filename, ))
+                continue
+            os.remove(filepath)
+            print('\t\tx -> {}'.format(filename, ))
+    print('\nDone with clean directories in test_locations in setup_common_for_test\n{}\n'.format('*'*8))
+
 
