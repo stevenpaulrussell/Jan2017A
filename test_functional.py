@@ -30,26 +30,15 @@ class RebuildDatabaseFromBaseDocuments(unittest.TestCase):
 
 class InsertFromImportsSimple(unittest.TestCase):
     def setUp(self):
-        imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
-        for location in imports_gen:
-            directory_path = location['path']
-            this_path, dirs, files = os.walk(directory_path).__next__()
-            for filename in files:
-                filepath = os.path.join(this_path, filename)
-                os.remove(filepath)
+        setup_common_for_test.clean_directories(verbose=True)
         tables = action.get_current_tableset(connect=connect)
         action.destroy_database_tables(tables, connect=connect)
         action.make_database_tables(path_to_listings=path_to_listings, connect=connect)
         action.make_database_views(path_to_listings, connect=connect)
 
     def tearDown(self):
-        imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
-        for location in imports_gen:
-            directory_path = location['path']
-            this_path, dirs, files = os.walk(directory_path).__next__()
-            for filename in files:
-                filepath = os.path.join(this_path, filename)
-                os.remove(filepath)
+        setup_common_for_test.clean_directories()
+
 
     def test_can_import_whole_sheet(self):
         to_match = dict(table='person', action='import whole', system='steve air')

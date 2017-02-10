@@ -28,7 +28,7 @@ def read_test_locations():
         test_locations[alias] = os.path.join(info['path'], info['filename'])
     return test_locations
 
-def clean_directories():
+def clean_directories(verbose=False):
     print('\n{}\nClean directories in test_locations in setup_common_for_test'.format('*'*8))
     keepers = set()
     for alias, details in test_directory.items():

@@ -49,13 +49,11 @@ class Test_can_read_a_spreadsheet(unittest.TestCase):
 
 class TestWritingToAn_xlsx(unittest.TestCase):
     def setUp(self):
-        super().setUp()
         self.test_paths = common.read_test_locations()
         self.data_generator = file_utilities.spreadsheet_keyvalue_generator(self.test_paths['person_table_example'])
         self.test_write_path = os.path.join(common.test_source_path, 'TEST_WRITE.xlsx')
 
     def tearDown(self):
-        super().tearDown()
         if os.path.exists(self.test_write_path):
             os.remove(self.test_write_path)
 

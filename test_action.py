@@ -14,23 +14,18 @@ imports_path = test_directory['imports_locator']
 
 class CanProperlyHandleWholeTableImports(unittest.TestCase):
     def setUp(self):
+        setup_common_for_test.clean_directories()
         sentry.path_to_listings = test_directory
-        self.file_to_get = set()
         sentry.poll_imports()
         sentry.work_list = []
         to_match = dict(table='person', action='import whole', system='steve air')
         path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        to_get = filemoves.copy_alias_to_path('person_table_example', test_directory, path)
-        self.file_to_get.add(to_get)
+        filemoves.copy_alias_to_path('person_table_example', test_directory, path)
 
     def tearDown(self):
-        for a_file_path in self.file_to_get:
-            try:
-                os.remove(a_file_path)
-            except FileNotFoundError:
-                pass
         sentry.poll_imports()
         sentry.work_list = []
+        setup_common_for_test.clean_directories()
 
     def test_can_find_and_import_whole_tables(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
@@ -51,8 +46,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         # redo the import !
         to_match = dict(table='person', action='import whole', system='steve air')
         path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        to_get = filemoves.copy_alias_to_path('person_table_example', test_directory, path)
-        self.file_to_get.add(to_get)
+        filemoves.copy_alias_to_path('person_table_example', test_directory, path)
 
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         self.assertTrue(len(sentry.work_list) == 0)  # Work done has cleared the work_list
@@ -68,11 +62,9 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
-        import_file_path = self.file_to_get.copy().pop()
-        import_file_name = os.path.split(import_file_path)[-1]
 
         self.assertIn('source_file', vars[0])
-        self.assertEqual(import_file_name, vars[0]['source_file'])
+        self.assertIn('person', vars[0]['source_file'])
         self.assertIn('author', vars[0])
         self.assertIn('from spreadsheet or cloud AAA', vars[0]['author'])
 
@@ -81,23 +73,18 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
 
 class CanProperlyHandle_By_Line_TableImports(unittest.TestCase):
     def setUp(self):
+        setup_common_for_test.clean_directories()
         sentry.path_to_listings = test_directory
-        self.file_to_get = set()
         sentry.poll_imports()
         sentry.work_list = []
         to_match = dict(table='person', action='import by line', system='steve air')
         path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        to_get = filemoves.copy_alias_to_path('person_draft_error', test_directory, path)
-        self.file_to_get.add(to_get)
+        filemoves.copy_alias_to_path('person_draft_error', test_directory, path)
 
     def tearDown(self):
-        for a_file_path in self.file_to_get:
-            try:
-                os.remove(a_file_path)
-            except FileNotFoundError:
-                pass
         sentry.poll_imports()
         sentry.work_list = []
+        setup_common_for_test.clean_directories()
 
     def test_can_find_and_import_tables_by_line(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
@@ -115,20 +102,20 @@ class CanProperlyHandle_By_Line_TableImports(unittest.TestCase):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
-        import_file_path = self.file_to_get.copy().pop()
-        import_file_name = os.path.split(import_file_path)[-1]
 
         self.assertIn('source_file', vars[0])
-        self.assertEqual(import_file_name, vars[0]['source_file'])
+        self.assertEqual('person', vars[0]['source_file'])
         self.assertIn('author', vars[0])
         self.assertIn('from spreadsheet or cloud AAA', vars[0]['author'])
 
 
-
-
 class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):
     def setUp(self):
+        setup_common_for_test.clean_directories()
         self.tableset = action.get_current_tableset(connect=dataqueda_constants.LOCAL)
+
+    def tearDown(self):
+        setup_common_for_test.clean_directories()
 
     def test_can_retrieve_tables(self):
         if self.tableset:

@@ -12,11 +12,10 @@ imports_path = test_directory['imports_locator']
 
 class MoveCopyAndDeleteUsingLocators(unittest.TestCase):
     def setUp(self):
-        self.file_to_get = []
+        setup_common_for_test.clean_directories()
 
     def tearDown(self):
-        for a_file_path in self.file_to_get:
-            os.remove(a_file_path)
+        setup_common_for_test.clean_directories()
 
     def test_can_get_import_paths_by_match(self):
         to_match = dict(table='person', action='import whole', system='steve air')
@@ -34,7 +33,6 @@ class MoveCopyAndDeleteUsingLocators(unittest.TestCase):
         to_match = dict(table='person', action='import whole', system='steve air')
         copy_path = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
         copied_path = filemoves.copy_alias_to_path('person_table_example', test_directory, copy_path)
-        self.file_to_get.append(copied_path)
         self.assertTrue(os.path.exists(copied_path))
         self.assertEqual(os.path.split(copied_path)[0], copy_path)
 
@@ -43,7 +41,6 @@ class MoveCopyAndDeleteUsingLocators(unittest.TestCase):
         a_file_path = test_directory['table_as_query_cmds']
         print(a_file_path)
         copied_path = filemoves.copy_file_path_to_alias_named_directory(a_file_path, 'dropbox_test', test_directory)
-        self.file_to_get.append(copied_path)
         source_name = os.path.split(a_file_path)[-1]
         copy_name = os.path.split(copied_path)[-1]
         self.assertEqual(source_name, copy_name)
