@@ -92,7 +92,6 @@ class Line_At_A_Time_Imports(General_Imports):
         for index, a_line in enumerate(self.import_lines):
             if index > pass_by:
                 remaining.append(a_line)
-        print('see sentry.Line_At_A_Time_Imports.update import file lines')
         remaining = remaining or [OrderedDict([(key, ' ') for key in self.newly_imported_lines[0].keys()])]
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
 
@@ -102,8 +101,9 @@ class Line_At_A_Time_Imports(General_Imports):
         archive_path = os.path.join(archive_directory_path, self.file_name)
         if os.path.exists(archive_path):
             self.previously_imported_lines = [l for l in file_utilities.spreadsheet_keyvalue_generator(archive_path)]
-        to_rewrite = (line for line in self.previously_imported_lines + self.newly_imported_lines)
-        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(to_rewrite, archive_path)
+        to_rewrite = [line for line in self.previously_imported_lines + self.newly_imported_lines]
+        if to_rewrite:
+            file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in to_rewrite), archive_path)
 
 
 def poll_imports():

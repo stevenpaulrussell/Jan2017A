@@ -59,10 +59,6 @@ class InsertFromImportsSimple(unittest.TestCase):
         self.assertFalse(os.path.exists(spreadsheet_path))  # import should have been removed
         self.assertTrue(os.path.exists(success_path))  # successful import copied here for safety
 
-        os.remove(success_path)
-
-        action.run_database_queries(path_to_listings, connect)
-
 
     def test_failure_import_whole_sheet(self):
         to_match = dict(table='person', action='import whole', system='steve air')
@@ -95,26 +91,14 @@ class InsertFromImportsSimple(unittest.TestCase):
 
 class InsertFromImportsIncrementally(unittest.TestCase):
     def setUp(self):
-        imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
-        for location in imports_gen:
-            directory_path = location['path']
-            this_path, dirs, files = os.walk(directory_path).__next__()
-            for filename in files:
-                filepath = os.path.join(this_path, filename)
-                os.remove(filepath)
+        setup_common_for_test.clean_directories()
         tables = action.get_current_tableset(connect=connect)
         action.destroy_database_tables(tables, connect=connect)
         action.make_database_tables(path_to_listings=path_to_listings, connect=connect)
         action.make_database_views(path_to_listings, connect=connect)
 
     def tearDown(self):
-        imports_gen = file_utilities.spreadsheet_keyvalue_generator(imports_path)
-        for location in imports_gen:
-            directory_path = location['path']
-            this_path, dirs, files = os.walk(directory_path).__next__()
-            for filename in files:
-                filepath = os.path.join(this_path, filename)
-                os.remove(filepath)
+        setup_common_for_test.clean_directories()
 
     def test_incremental_with_errors(self):
         to_match = dict(table='person', action='import by line', system='steve air')
@@ -133,7 +117,7 @@ class InsertFromImportsIncrementally(unittest.TestCase):
         self.assertIn('INSERT INTO', first_command)
         self.assertTrue(value_mapping_as_dict.keys())
         self.assertTrue(os.path.exists(spreadsheet_path))  # import file remains but is changed
-        self.assertTrue(os.path.exists(success_path))  # successful import copied here for safety
+        self.assertTrue(os.path.exists(success_path))  # successful import copied here for safetyZ
 
 
     def test_work_to_do(self):

@@ -71,7 +71,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
 
 
 
-class CanProperlyHandle_By_Line_TableImports(unittest.TestCase):
+class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCase):
     def setUp(self):
         setup_common_for_test.clean_directories()
         sentry.path_to_listings = test_directory
@@ -97,14 +97,14 @@ class CanProperlyHandle_By_Line_TableImports(unittest.TestCase):
         self.assertEqual(len(vars), 1)
         self.assertIn('last', vars[0])
 
-
     def test_keywords_source_file_and_author_are_available_for_tables(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        sentry.poll_imports()
+        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
         success, history = action.do_a_work_item(test_directory, connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
-
         self.assertIn('source_file', vars[0])
-        self.assertEqual('person', vars[0]['source_file'])
+        self.assertIn('person', vars[0]['source_file'])
         self.assertIn('author', vars[0])
         self.assertIn('from spreadsheet or cloud AAA', vars[0]['author'])
 
