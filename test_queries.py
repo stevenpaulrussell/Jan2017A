@@ -19,10 +19,14 @@ class TestRunQueries(unittest.TestCase):
         filemoves.copy_alias_to_path('person_table_example', path_to_listings, import_directory)
         success, history = action.do_a_work_item(path_to_listings, connect=connect)
         self.assertTrue(success)
-        print('debug TestRunQueries.do_person_import', history)
+        # print('debug TestRunQueries.do_person_import', history)
 
     def setUp(self):
         setup_common_for_test.clean_directories()
+        tables = action.get_current_tableset(connect=connect)
+        action.destroy_database_tables(tables, connect=connect)
+        action.make_database_tables(path_to_listings=path_to_listings, connect=connect)
+        action.make_database_views(path_to_listings, connect=connect)
         self.do_person_import()
         self.reports_directory = path_to_listings['sql_reports']
         self.query_trouble_directory = path_to_listings['sql_query_trouble']
@@ -39,7 +43,7 @@ class TestRunQueries(unittest.TestCase):
         self.assertEqual(file_name, 'sql_query_trouble')
 
 
-    def test_good_queries_write_reports(self):
+    def xtest_good_queries_write_reports(self):
         #action.run_database_queries(path_to_listings, connect=dataqueda_constants.LOCAL)
         self.assertFalse('do this second')
 
