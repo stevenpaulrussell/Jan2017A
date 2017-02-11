@@ -1,8 +1,10 @@
+import os
 from collections import OrderedDict
 
 import sentry
 import cursors
 import sql_command_library
+import file_utilities
 
 BUILD_HISTORY_TABLE = 'build_history'
 
@@ -87,14 +89,27 @@ def run_database_queries(path_to_listings, connect):
             cmdr.do_query(query_string)
         success, history, query_response = cmdr.success, cmdr.history, cmdr.query_response_gen
         if success:
+            qpath = os.path.join(os.path.split(path_to_listings['sql_reports'])[0], query_name + '.xlsx')
             lines = [x for x in query_response]
             if len(lines) > 1:
-                print('\nWould write {} report for {}\n{}\n'.format(len(lines), query_name, lines))
+                file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in lines), qpath)
             else:
-                print('{} delete'.format(query_name))
+                try:
+                    os.remove(qpath)
+                except FileNotFoundError:
+                    pass
         else:
             troubles.append(history)
-    print('\nWrite trouble report {}'.format(troubles))
+    tpath = path_to_listings['sql_query_trouble']
+    if troubles:
+        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((t for t in troubles), tpath)
+        print('\nWrite trouble report {}'.format(troubles))
+    else:
+        try:
+            os.remove(tpath)
+        except FileNotFoundError:
+            pass
+    return not troubles, history
 
 
 
@@ -126,52 +141,4 @@ def run_database_commands_as_group(builder, connect, commit):
         for cmdstring in builder.values():
             cmdr.do_cmd(cmdstring)
     return cmdr.success, cmdr.history
-
-
-
-
-def make_queries(local_connect):
-    message_list = ['Running queries']
-    report_dirname = 'Reports'
-    cmdr = Commander(DATABASENAME, local_connect)
-    query_cmds = read_queries(DATAQUEDA_AWS_BUCKET)
-    for a_query_name in query_cmds.keys():
-        message_list.append(a_query_name)
-        create_query_cmd_string = query_cmds[a_query_name].create_query_cmd_string
-        possible_error = cmdr.do_cmd(create_query_cmd_string)
-        if possible_error:
-            message_list.append(possible_error)
-            continue
-        try:
-            results = cmdr.cur.fetchall()
-        except Exception as E:
-            message_list.append(repr(E))
-            continue
-        report_filename = '{}.xlsx'.format(a_query_name)  # just the query name.. for now!
-        report_path = os.path.join(local_report_dir, report_filename)
-        make_excel_report(report_path, create_query_cmd_string, results)
-        aws.move_local_file_to_s3(report_path, DATAQUEDA_AWS_BUCKET, '{}/{}'.format(report_dirname, report_filename))
-        message_list.append('Successfully wrote {} to aws'.format(report_filename))
-    cmdr.close()
-    write_action_result_to_aws(message_list, 'make_queries_result.txt')
-
-
-def make_excel_report(filepath, query_cmd, results):
-    first_line = query_cmd.split('\n')[0]
-    query_headers = extract_lower_case_words(first_line)
-    list_of_lists = [query_headers]
-    for one_line in results:
-        list_of_lists += [list(one_line)]
-    excels.write_lists_to_excel(filepath, list_of_lists)
-
-
-def extract_lower_case_words(astring):
-    """A helper routine solely for make_excel_report"""
-    query_headers = []
-    for sub_string in astring.split():
-        character_list = [character for character in sub_string if character.islower()]
-        if character_list:
-            query_headers.append(''.join(character_list))
-    return query_headers
-
 

@@ -43,9 +43,9 @@ class TestRunQueries(unittest.TestCase):
         self.assertEqual(file_name, 'sql_query_trouble')
 
 
-    def xtest_good_queries_write_reports(self):
-        #action.run_database_queries(path_to_listings, connect=dataqueda_constants.LOCAL)
-        self.assertFalse('do this second')
+    def test_good_queries_write_reports(self):
+        success, history = action.run_database_queries(path_to_listings, connect=dataqueda_constants.LOCAL)
+        self.assertTrue(success)
 
 
     def xtest_bad_queries_write_trouble_reports(self):
