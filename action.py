@@ -83,19 +83,21 @@ def make_database_views(path_to_listings, connect):
 
 def run_database_queries(path_to_listings, connect):
     troubles = []
+    report_directory = os.path.split(path_to_listings['sql_reports'])[0]
     query_builder = sql_command_library.read_query_creation_commands(path_to_listings)
     for query_name, query_string in query_builder.items():
         with cursors.Commander(connect) as cmdr:
             cmdr.do_query(query_string)
-        success, history, query_response = cmdr.success, cmdr.history, cmdr.query_response_gen
+        success, history, report = cmdr.success, cmdr.history, cmdr.query_response_gen
+        report = [line for line in report]
+        report_gen = (line for line in report)
         if success:
-            qpath = os.path.join(os.path.split(path_to_listings['sql_reports'])[0], query_name + '.xlsx')
-            lines = [x for x in query_response]
-            if len(lines) > 1:
-                file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in lines), qpath)
+            report_path = os.path.join(report_directory, query_name + '.xlsx')
+            if len(report) > 1:
+                file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(report_gen, report_path)
             else:
                 try:
-                    os.remove(qpath)
+                    os.remove(report_path)
                 except FileNotFoundError:
                     pass
         else:
