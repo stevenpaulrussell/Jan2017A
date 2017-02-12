@@ -1,22 +1,18 @@
 import unittest
 
-from file_utilities import spreadsheet_keyvalue_generator
-
+import file_utilities
 import db_cmd_makers
 import db_view_makers
 import db_query_makers
 import sql_command_library
 
-import setup_common_for_test
-
-
-test_directory = setup_common_for_test.read_test_locations()
+from setup_common_for_test import test_directory
 
 
 class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
     def test_can_make_commands_for_generating_table_person(self):
-        print('***', test_directory['db_template'])
-        template_line_gen = spreadsheet_keyvalue_generator(test_directory['db_template'])
+        db_template_path = file_utilities.get_path_from_alias('db_template')
+        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(db_template_path)
         sql_tables = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
         self.assertIn('person', sql_tables)
         self.assertTrue(len(sql_tables) > 5)
@@ -33,7 +29,8 @@ class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
 
 class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
     def test_can_make_commands_for_view(self):
-        template_line_gen = spreadsheet_keyvalue_generator(test_directory['view_template'])
+        view_template_path = file_utilities.get_path_from_alias('view_template')
+        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(view_template_path)
         sql_views = db_view_makers.extract_sql_view_cmds(template_line_gen)
         self.assertIn('tutor_active_view', sql_views)
         self.assertEqual(len(sql_views), 12)
@@ -46,7 +43,8 @@ class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
 
 class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
     def test_can_make_commands_for_query(self):
-        template_line_gen = spreadsheet_keyvalue_generator(test_directory['query_template'])
+        query_template_path = file_utilities.get_path_from_alias('query_template')
+        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(query_template_path)
         sql_queries = db_query_makers.extract_sql_query_cmds(template_line_gen)
         self.assertIn('course_completes', sql_queries)
         self.assertEqual(len(sql_queries), 6)

@@ -1,6 +1,5 @@
 import unittest
 import os
-from itertools import chain
 
 import file_utilities
 import setup_common_for_test as common
