@@ -6,9 +6,6 @@ import sql_command_library
 import setup_common_for_test
 
 
-test_directory = setup_common_for_test.read_test_locations()
-
-
 class MyTestCase(unittest.TestCase):
     def test_am_connecting_locally_and_see_local_tables(self):
         cmdr = cursors.Commander(connect=dataqueda_constants.LOCAL)
