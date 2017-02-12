@@ -10,7 +10,6 @@ IMPORT_WHOLE_ACTION_NAME = 'import whole'
 IMPORT_BY_LINE_ACTION_NAME = 'import by line'
 
 
-path_to_listings = None     # Set by program importing this file
 work_list = []              # Read by program importing this file
 
 
@@ -55,7 +54,7 @@ class Whole_Spreadsheet_Imports(General_Imports):
 
     def success(self):
         destination_alias = 'archive/{}'.format(self.table_name)
-        dest = filemoves.copy_file_path_to_alias_named_directory(self.file_path, destination_alias, path_to_listings)
+        dest = filemoves.copy_file_path_to_alias_named_directory(self.file_path, destination_alias)
         if dest:
             os.remove(self.file_path)
 
@@ -96,8 +95,7 @@ class Line_At_A_Time_Imports(General_Imports):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
 
     def update_archive_file(self):
-        archive_directory_alias = 'archive/{}'.format(self.table_name)
-        archive_directory_path = path_to_listings[archive_directory_alias][:-2]
+        archive_directory_path = os.join(file_utilities.get_path_from_alias('archive'), self.table_name)
         archive_path = os.path.join(archive_directory_path, self.file_name)
         if os.path.exists(archive_path):
             self.previously_imported_lines = [l for l in file_utilities.spreadsheet_keyvalue_generator(archive_path)]
@@ -107,10 +105,10 @@ class Line_At_A_Time_Imports(General_Imports):
 
 
 def poll_imports():
-    path_to_imports_listings = path_to_listings['imports_locator']
-    import_listings = file_utilities.spreadsheet_keyvalue_generator(path_to_imports_listings)
+    import_listings = file_utilities.key_values_from_alias('imports_locator')
     for import_listing in import_listings:
-        new, different, missing = take_roll_of_new_changes_and_missing(import_listing['path'])
+        path_to_import_directory = os.path.join(import_listing['base'], import_listing['path'])
+        new, different, missing = take_roll_of_new_changes_and_missing(path_to_import_directory)
         if any((new, different)):
             enlist_work(new, different, import_listing)
             break

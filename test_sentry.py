@@ -2,14 +2,13 @@ import os
 import time
 import unittest
 
-import setup_common_for_test
 import sentry
+import file_utilities
+import setup_common_for_test
 
 
-dropbox_directory_path = setup_common_for_test.test_directory['dropbox_test']['path']
+dropbox_directory_path = file_utilities.get_path_from_alias('dropbox_test_directory')
 TEMP_FILE_NAME = 'temp_file_name'
-test_directory = setup_common_for_test.read_test_locations()
-imports_path = test_directory['imports_locator']
 
 
 class TestSentryGetsFileChanges(unittest.TestCase):
@@ -71,7 +70,7 @@ class TestSentryGetsFileChanges(unittest.TestCase):
 
 class MyTestCase(unittest.TestCase):
     def test_action_polls_all_directories_for_changes(self):
-        sentry.path_to_listings = test_directory
+        sentry.path_to_listings = setup_common_for_test.test_directory
         sentry.poll_imports()
         if sentry.work_list:
             print('Seeing {} work items'.format(len(sentry.work_list)))
