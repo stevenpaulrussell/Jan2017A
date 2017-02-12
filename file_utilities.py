@@ -51,6 +51,12 @@ def read_cmds_as_list(alias):
     return wanted
 
 
+def clean_and_return_path(alias):
+    my_path = get_path_from_alias(alias)
+    if os.path.exists(my_path):
+        os.remove(my_path)
+    return my_path
+
 
 def copy_file_path_to_alias_named_directory(source_file_path, alias, locator):
     """Copy specified file to a directory named by alias in locator.  Use for test and moving imports after done."""

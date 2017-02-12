@@ -1,31 +1,30 @@
 import collections
-import os
 
-import file_utilities
+from file_utilities import read_cmds_as_list, key_values_from_alias, clean_and_return_path
 import db_cmd_makers, db_view_makers, db_query_makers
 
 
 def read_db_creation_commands():
-    return file_utilities.read_cmds_as_list('create_table_cmds')
+    return read_cmds_as_list('create_table_cmds')
 
 
 def read_db_insertion_commands():
-    return file_utilities.read_cmds_as_list('insert_into_table_cmds')
+    return read_cmds_as_list('insert_into_table_cmds')
 
 
 def read_view_creation_commands():
-    return file_utilities.read_cmds_as_list('create_view_cmds')
+    return read_cmds_as_list('create_view_cmds')
 
 
 def read_query_creation_commands():
     query_command_list = collections.OrderedDict()
     for query_file in ('table_as_query_cmds', 'view_as_query_cmds', 'create_query_cmds'):
-        query_command_list.update(file_utilities.read_cmds_as_list(query_file))
+        query_command_list.update(read_cmds_as_list(query_file))
     return query_command_list
 
 
 def write_db_creation_commands():
-    template_line_gen = file_utilities.key_values_from_alias('db_template')
+    template_line_gen = key_values_from_alias('db_template')
     db_commands = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
     create_path = clean_and_return_path('create_table_cmds')
     insert_path = clean_and_return_path('insert_into_table_cmds')
@@ -37,7 +36,7 @@ def write_db_creation_commands():
 
 
 def write_view_creation_commands():
-    template_line_gen = file_utilities.key_values_from_alias('view_template')
+    template_line_gen = key_values_from_alias('view_template')
     view_commands = db_view_makers.extract_sql_view_cmds(template_line_gen)
     create_path = clean_and_return_path('create_view_cmds')
     query_path = clean_and_return_path('view_as_query_cmds')
@@ -47,7 +46,7 @@ def write_view_creation_commands():
 
 
 def write_query_creation_commands():
-    template_line_gen = file_utilities.key_values_from_alias('query_template')
+    template_line_gen = key_values_from_alias('query_template')
     query_commands = db_query_makers.extract_sql_query_cmds(template_line_gen)
     query_path = clean_and_return_path('create_query_cmds')
     for query_name, query in query_commands.items():
@@ -57,10 +56,3 @@ def write_query_creation_commands():
 def write_cmd_string(item_name, my_path, command_string):
     with open(my_path, 'a') as fp:
         fp.write('{}\n{}\n\n'.format(item_name, command_string))
-
-
-def clean_and_return_path(alias):
-    my_path = file_utilities.get_path_from_alias(alias)
-    if os.path.exists(my_path):
-        os.remove(my_path)
-    return my_path
