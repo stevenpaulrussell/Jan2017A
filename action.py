@@ -12,14 +12,13 @@ class ActionException(Exception):
     """For help with debugging fow now """
 
 
-def do_a_work_item(path_to_listings, connect):
-    sentry.path_to_listings = path_to_listings
+def do_a_work_item(connect):
     sentry.poll_imports()
     if sentry.work_list:
         change = sentry.work_list.pop(0)
-        insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[change.table_name]
+        insert_cmd = sql_command_library.read_db_insertion_commands()[change.table_name]
         if change.action == 'import whole':
-            return import_whole_sheet(change, insert_cmd, path_to_listings, connect)
+            return import_whole_sheet(change, insert_cmd, connect)
         elif change.action == 'import by line':
             return import_line_at_a_time(change, insert_cmd, connect)
         else:
@@ -27,10 +26,10 @@ def do_a_work_item(path_to_listings, connect):
             raise ActionException(msg)
 
 
-def import_whole_sheet(change, insert_cmd, path_to_listings, connect):
+def import_whole_sheet(change, insert_cmd, connect):
         success, history = general_insert(insert_cmd, change.import_lines, connect=connect, **change.command_keys)
         if success:
-            add_to_build_history(change.build_line, path_to_listings=path_to_listings, connect=connect)
+            add_to_build_history(change.build_line, connect=connect)
             change.success()
         else:
             change.failure(history)
@@ -49,8 +48,8 @@ def import_line_at_a_time(change, insert_cmd, connect):
         return success, history
 
 
-def add_to_build_history(build_line, path_to_listings, connect):
-    insert_cmd = sql_command_library.read_db_insertion_commands(path_to_listings)[BUILD_HISTORY_TABLE]
+def add_to_build_history(build_line, connect):
+    insert_cmd = sql_command_library.read_db_insertion_commands()[BUILD_HISTORY_TABLE]
     with cursors.Commander(connect, commit='group') as cmdr:
         cmdr.do_cmd(insert_cmd, build_line)
     if not cmdr.success:
@@ -69,22 +68,22 @@ def destroy_database_tables(tableset, connect):
     return cmdr.success, cmdr.history
 
 
-def make_database_tables(path_to_listings, connect):
-    table_builder = sql_command_library.read_db_creation_commands(path_to_listings)
+def make_database_tables(connect):
+    table_builder = sql_command_library.read_db_creation_commands()
     success, history = run_database_commands_as_group(table_builder, connect, commit='group')
     return success, history
 
 
-def make_database_views(path_to_listings, connect):
-    view_builder = sql_command_library.read_view_creation_commands(path_to_listings)
+def make_database_views(connect):
+    view_builder = sql_command_library.read_view_creation_commands()
     success, history = run_database_commands_as_group(view_builder, connect, commit='group')
     return success, history
 
 
 def run_database_queries(path_to_listings, connect):
     troubles = []
-    report_directory = os.path.split(path_to_listings['sql_reports'])[0]
-    query_builder = sql_command_library.read_query_creation_commands(path_to_listings)
+    report_directory = file_utilities.get_path_from_alias('sql_reports_directory')
+    query_builder = sql_command_library.read_query_creation_commands()
     for query_name, query_string in query_builder.items():
         with cursors.Commander(connect) as cmdr:
             cmdr.do_query(query_string)
