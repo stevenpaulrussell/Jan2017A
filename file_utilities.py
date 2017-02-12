@@ -35,6 +35,22 @@ def get_path_from_alias(alias):
     return os.path.join(spec['base'], spec['path'])
 
 
+def key_values_from_alias(alias):
+    return spreadsheet_keyvalue_generator(get_path_from_alias(alias))
+
+
+def read_cmds_as_list(alias):
+    wanted = collections.OrderedDict()
+    with open(get_path_from_alias(alias), 'r') as fp:
+        commands_as_string = fp.read().strip()
+    commands_as_list = commands_as_string.split('\n\n')
+    for item in commands_as_list:
+        lines = item.split('\n')
+        item_name, item = lines[0], '\n'.join(lines[1:])
+        wanted[item_name] = item
+    return wanted
+
+
 
 def copy_file_path_to_alias_named_directory(source_file_path, alias, locator):
     """Copy specified file to a directory named by alias in locator.  Use for test and moving imports after done."""

@@ -11,8 +11,7 @@ from setup_common_for_test import test_directory
 
 class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
     def test_can_make_commands_for_generating_table_person(self):
-        db_template_path = file_utilities.get_path_from_alias('db_template')
-        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(db_template_path)
+        template_line_gen = file_utilities.key_values_from_alias('db_template')
         sql_tables = db_cmd_makers.extract_sql_table_cmds(template_line_gen)
         self.assertIn('person', sql_tables)
         self.assertTrue(len(sql_tables) > 5)
@@ -29,8 +28,7 @@ class TestMakingCmdsForTableGenerationFrom_DB_Template(unittest.TestCase):
 
 class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
     def test_can_make_commands_for_view(self):
-        view_template_path = file_utilities.get_path_from_alias('view_template')
-        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(view_template_path)
+        template_line_gen = file_utilities.key_values_from_alias('view_template')
         sql_views = db_view_makers.extract_sql_view_cmds(template_line_gen)
         self.assertIn('tutor_active_view', sql_views)
         self.assertEqual(len(sql_views), 12)
@@ -43,8 +41,7 @@ class TestMakingCmdsForTableGenerationFrom_View_Template(unittest.TestCase):
 
 class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
     def test_can_make_commands_for_query(self):
-        query_template_path = file_utilities.get_path_from_alias('query_template')
-        template_line_gen = file_utilities.spreadsheet_keyvalue_generator(query_template_path)
+        template_line_gen = file_utilities.key_values_from_alias('query_template')
         sql_queries = db_query_makers.extract_sql_query_cmds(template_line_gen)
         self.assertIn('course_completes', sql_queries)
         self.assertEqual(len(sql_queries), 6)
@@ -58,18 +55,17 @@ class TestMakingCmdsForTableGenerationFrom_Query_Template(unittest.TestCase):
 
 class TestRetrievalOfSQLCommandsFromLibrary(unittest.TestCase):
     def test_can_retrieve_table_create_commands(self):
-        sql_command_library.write_db_creation_commands(test_directory)
-        sql_command_library.write_view_creation_commands(test_directory)
-        sql_command_library.write_query_creation_commands(test_directory)
-        db_creation_commands = sql_command_library.read_db_creation_commands(test_directory)
-        view_creation_commands = sql_command_library.read_view_creation_commands(test_directory)
-        query_creation_commands = sql_command_library.read_query_creation_commands(test_directory)
-        db_insertion_commands = sql_command_library.read_db_insertion_commands(test_directory)
+        sql_command_library.write_db_creation_commands()
+        sql_command_library.write_view_creation_commands()
+        sql_command_library.write_query_creation_commands()
+        db_creation_commands = sql_command_library.read_db_creation_commands()
+        view_creation_commands = sql_command_library.read_view_creation_commands()
+        query_creation_commands = sql_command_library.read_query_creation_commands()
+        db_insertion_commands = sql_command_library.read_db_insertion_commands()
         self.assertIn('person', db_creation_commands)
         self.assertIn('aka_vitals_view', view_creation_commands)
         self.assertIn('scholarships_per_schoolyear', query_creation_commands)
         self.assertIn('person', db_insertion_commands)
-        print(db_insertion_commands)
 
 
 if __name__ == '__main__':
