@@ -73,19 +73,3 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
     workbook.close()
 
 
-
-def gen_by_filtering_from_gen_list(a_gen, checker, action=lambda msg: 1):
-    for item in a_gen:
-        msg = checker(item)
-        if msg:
-            action(msg)
-            break
-        else:
-            yield item
-
-
-
-
-
-
-
