@@ -11,13 +11,6 @@ file_utilities.read_file_listings(os.path.join(TEST_SOURCE_PATH, LOCATOR_NAME))
 test_directory = file_utilities.file_listings
 
 
-# def read_test_locations():
-#     test_locations = {}
-#     for alias, info in test_directory.items():
-#         test_locations[alias] = os.path.join(info['path'], info['filename'])
-#     return test_locations
-#
-
 def clean_directories(verbose=False):
     def vprint(astring):
         if verbose:

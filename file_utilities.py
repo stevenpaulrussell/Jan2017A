@@ -5,7 +5,9 @@ import xlrd
 import xlsxwriter
 
 
-file_listings = {}
+KNOWN_SYSTEMS = ('steve air', )
+
+file_listings = {}  # Actual values are set via a global variable in some function, maybe read_file_listings below.
 
 
 class InputSpreadsheetException(Exception):
@@ -13,13 +15,56 @@ class InputSpreadsheetException(Exception):
         super().__init__(args, kwds)
         self.reasons = args
 
+class FileMovesSurprise(Exception):
+    """Flag any unusual cases"""
+
 
 def read_file_listings(path_to_listings):
+    """This is called by some main program to read in locations of everything """
     global file_listings
     file_listings = {}
     for aline in spreadsheet_keyvalue_generator(path_to_listings):
         alias = aline.pop('alias')
         file_listings[alias] = dict(aline)
+
+
+def get_path_from_alias(alias):
+    spec = file_listings[alias]
+    if not spec['system'] in KNOWN_SYSTEMS:
+        raise FileMovesSurprise('alias "{}" asking for unknown system "{}"'.format(alias, spec['system']))
+    return os.path.join(spec['base'], spec['path'])
+
+
+
+def copy_file_path_to_alias_named_directory(source_file_path, alias, locator):
+    """Copy specified file to a directory named by alias in locator.  Use for test and moving imports after done."""
+    dest_path = locator[alias]
+    dest_dir, file_name_must_be_star = os.path.split(dest_path)
+    if file_name_must_be_star != '*':
+        msg = 'alias {} shows path {} filename "{}" not "*"'.format(alias, dest_path, file_name_must_be_star)
+        raise FileMovesSurprise(msg)
+    return copy_file_path_to_dir(source_file_path, dest_dir)
+
+
+def copy_alias_to_path(alias, locator, path_for_copy):
+    """Copy a file named in a 'locator' spreadsheet to a directory specified by path_for_copy. Return copied to path"""
+    source_path = locator[alias]
+    return copy_file_path_to_dir(source_path, path_for_copy)
+
+
+def copy_file_path_to_dir(source_file_path, dir_path):
+    """Common pattern used for alias and import copying """
+    source_file_name = os.path.split(source_file_path)[-1]
+    copied_path = os.path.join(dir_path, source_file_name)
+    if not os.path.isdir(dir_path):
+        msg = '{} not a directory, is target for {}'.format(dir_path, source_file_path)
+        raise FileMovesSurprise(msg)
+    if os.path.exists(copied_path):
+        msg = 'Found {} already has {}'.format(dir_path, source_file_name)
+        raise FileMovesSurprise(msg)
+    else:
+        shutil.copyfile(source_file_path, copied_path)
+    return copied_path
 
 
 def spreadsheet_keyvalue_generator(spreadsheet_path):
