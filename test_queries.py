@@ -26,7 +26,7 @@ class TestRunQueries(unittest.TestCase):
 
     def tearDown(self):
         pass
-        #setup_common_for_test.clean_directories()
+        setup_common_for_test.clean_directories()
 
     def test_good_queries_write_reports(self):
         success, history = action.run_database_queries(connect=LOCAL)
