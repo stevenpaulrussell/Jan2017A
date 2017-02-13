@@ -110,6 +110,8 @@ def poll_imports():
     import_listings = file_utilities.key_values_from_alias('imports_locator')
     for import_listing in import_listings:
         path_to_import_directory = os.path.join(import_listing['base'], import_listing['path'])
+        if not os.path.exists(path_to_import_directory):
+            continue
         new, different, missing = take_roll_of_new_changes_and_missing(path_to_import_directory)
         if any((new, different)):
             enlist_work(new, different, import_listing, path_to_import_directory)
