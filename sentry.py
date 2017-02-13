@@ -124,7 +124,11 @@ def enlist_work(new, different, import_listing):
 
 
 def enlist_whole_table_work(new, different, import_listing):
+
+
     table, import_directory = import_listing['table'], import_listing['path']
+
+
     for import_file_name in new:
         work_list.append(Whole_Spreadsheet_Imports(table, import_directory, import_file_name))
     if different:

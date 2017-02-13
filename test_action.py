@@ -23,7 +23,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         sentry.work_list = []
         setup_common_for_test.clean_directories()
 
-    def xtest_can_find_and_import_whole_tables(self):
+    def test_can_find_and_import_whole_tables(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         sentry.poll_imports()
         self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
@@ -34,7 +34,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertEqual(len(vars), 1)
         self.assertIn('last', vars[0])
 
-    def xtest_double_import_whole_tables_generates_right_errors(self):
+    def test_double_import_whole_tables_generates_right_errors(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         action.do_a_work_item(connect=dataqueda_constants.LOCAL)
         self.assertTrue(len(sentry.work_list) == 0)  # Work done has cleared the work_list
@@ -53,7 +53,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn('last', vars[0])
         self.assertIn('IntegrityError', error_msg)
 
-    def xtest_keywords_source_file_and_author_are_available_for_tables(self):
+    def test_keywords_source_file_and_author_are_available_for_tables(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
@@ -80,7 +80,7 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         sentry.work_list = []
         setup_common_for_test.clean_directories()
 
-    def xtest_can_find_and_import_tables_by_line(self):
+    def test_can_find_and_import_tables_by_line(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         sentry.poll_imports()
         self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
@@ -91,7 +91,7 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         self.assertEqual(len(vars), 1)
         self.assertIn('last', vars[0])
 
-    def xtest_keywords_source_file_and_author_are_available_for_tables(self):
+    def test_keywords_source_file_and_author_are_available_for_tables(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         sentry.poll_imports()
         self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
