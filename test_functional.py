@@ -8,7 +8,7 @@ import action
 import setup_common_for_test
 
 connect = dataqueda_constants.LOCAL
-path_to_listings = setup_common_for_test.read_test_locations()
+path_to_listings = setup_common_for_test.test_directory
 imports_path = path_to_listings['imports_locator']
 
 
@@ -17,8 +17,8 @@ class RebuildDatabaseFromBaseDocuments(unittest.TestCase):
         tables = action.get_current_tableset(connect=connect)
         action.destroy_database_tables(tables, connect=connect)
 
-        successt, historyt = action.make_database_tables(path_to_listings=path_to_listings, connect=connect)
-        successv, historyv = action.make_database_views(path_to_listings=path_to_listings, connect=connect)
+        successt, historyt = action.make_database_tables(connect=connect)
+        successv, historyv = action.make_database_views(connect=connect)
         tables = action.get_current_tableset(connect=connect)
         (first_command, vars), first_psycop_response = historyv[0]
 
@@ -30,63 +30,71 @@ class RebuildDatabaseFromBaseDocuments(unittest.TestCase):
 
 class InsertFromImportsSimple(unittest.TestCase):
     def setUp(self):
-        setup_common_for_test.clean_directories(verbose=True)
+        setup_common_for_test.clean_directories()
         tables = action.get_current_tableset(connect=connect)
         action.destroy_database_tables(tables, connect=connect)
-        action.make_database_tables(path_to_listings=path_to_listings, connect=connect)
-        action.make_database_views(path_to_listings, connect=connect)
+        action.make_database_tables(connect=connect)
+        action.make_database_views(connect=connect)
 
     def tearDown(self):
+        pass
         setup_common_for_test.clean_directories()
 
 
     def test_can_import_whole_sheet(self):
-        to_match = dict(table='person', action='import whole', system='steve air')
-        import_directory = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        spreadsheet_path = filemoves.copy_alias_to_path('person_table_example', path_to_listings, import_directory)
-        spreadsheet_name = os.path.split(spreadsheet_path)[-1]
-        success_dir_wildcarded = path_to_listings['archive/person']
-        success_dir = success_dir_wildcarded[:-2]
-        success_path = os.path.join(success_dir, spreadsheet_name)
+        test_file_path = file_utilities.get_path_from_alias('person_table_example')
+        test_file_name = os.path.split(test_file_path)[-1]
+        destination_directory = file_utilities.get_path_from_alias('import whole person directory')
+        imported_file_path  = os.path.join(destination_directory, test_file_name)
+        archive_directory = file_utilities.get_path_from_alias('archive_directory/person')
+        archive_path = os.path.join(archive_directory, test_file_name)
 
-        success, history = action.do_a_work_item(path_to_listings, connect=connect)
+        file_utilities.copy_file_path_to_dir(test_file_path, destination_directory)
+
+        self.assertTrue(os.path.exists(imported_file_path))
+        self.assertFalse(os.path.exists(archive_path))
+
+        success, history = action.do_a_work_item(connect=connect)
         (first_command, vars), first_psycop_response = history[0]
         value_mapping_as_dict = vars[0]
 
         self.assertTrue(success)
         self.assertIn('INSERT INTO', first_command)
         self.assertTrue(value_mapping_as_dict.keys())
-        self.assertFalse(os.path.exists(spreadsheet_path))  # import should have been removed
-        self.assertTrue(os.path.exists(success_path))  # successful import copied here for safety
+        self.assertFalse(os.path.exists(imported_file_path))
+        self.assertTrue(os.path.exists(archive_path))
 
 
     def test_failure_import_whole_sheet(self):
-        to_match = dict(table='person', action='import whole', system='steve air')
-        import_directory = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        spreadsheet_path = filemoves.copy_alias_to_path('person_table_example', path_to_listings, import_directory)
-        spreadsheet_name = os.path.split(spreadsheet_path)[-1]
-        success_dir_wildcarded = path_to_listings['archive/person']
-        success_directory = success_dir_wildcarded[:-2]
-        success_path = os.path.join(success_directory, spreadsheet_name)
-        fail_file_name = 'ErRoR_{}'.format(spreadsheet_name)
-        fail_path = os.path.join(import_directory, fail_file_name)
+        test_file_path = file_utilities.get_path_from_alias('person_table_example')
+        test_file_name = os.path.split(test_file_path)[-1]
+        destination_directory = file_utilities.get_path_from_alias('import whole person directory')
+        imported_file_path  = os.path.join(destination_directory, test_file_name)
+        archive_directory = file_utilities.get_path_from_alias('archive_directory/person')
+        archive_path = os.path.join(archive_directory, test_file_name)
+        fail_file_name = 'ErRoR_{}'.format(test_file_name)
+        fail_path = os.path.join(destination_directory, fail_file_name)
 
-        action.do_a_work_item(path_to_listings, connect=connect)
-        os.remove(success_path)
-        should_be_None = action.do_a_work_item(path_to_listings, connect=connect)
-        filemoves.copy_alias_to_path('person_table_example', path_to_listings, import_directory)
+        file_utilities.copy_file_path_to_dir(test_file_path, destination_directory)
+        self.assertTrue(os.path.exists(imported_file_path))  # import is not removed
+        success, history = action.do_a_work_item(connect=connect)
+        self.assertFalse(os.path.exists(imported_file_path))  # import is not removed
+        self.assertTrue(success)
 
-        success, history = action.do_a_work_item(path_to_listings, connect=connect)
+        should_be_None = action.do_a_work_item(connect=connect)
+        self.assertFalse(should_be_None)
+
+        file_utilities.copy_file_path_to_dir(test_file_path, destination_directory)
+        success, history = action.do_a_work_item(connect=connect)
 
         (first_command, vars), first_psycop_response = history[0]
         value_mapping_as_dict = vars[0]
-
-        self.assertFalse(should_be_None)
         self.assertFalse(success)
+        self.assertIn('duplicate key value violates unique constraint', first_psycop_response)
         self.assertIn('INSERT INTO', first_command)
         self.assertTrue(value_mapping_as_dict.keys())
-        self.assertTrue(os.path.exists(spreadsheet_path))  # import is not removed
-        self.assertTrue(os.path.exists(fail_path))  # failure rewrites the import
+        self.assertTrue(os.path.exists(imported_file_path))
+        self.assertTrue(os.path.exists(fail_path))
 
 
 class InsertFromImportsIncrementally(unittest.TestCase):
@@ -94,33 +102,32 @@ class InsertFromImportsIncrementally(unittest.TestCase):
         setup_common_for_test.clean_directories()
         tables = action.get_current_tableset(connect=connect)
         action.destroy_database_tables(tables, connect=connect)
-        action.make_database_tables(path_to_listings=path_to_listings, connect=connect)
-        action.make_database_views(path_to_listings, connect=connect)
+        action.make_database_tables(connect=connect)
+        action.make_database_views(connect=connect)
 
     def tearDown(self):
         setup_common_for_test.clean_directories()
 
-    def test_incremental_with_errors(self):
-        to_match = dict(table='person', action='import by line', system='steve air')
-        import_directory = filemoves.find_unique_import_directory_matching_pattern(imports_path, **to_match)
-        spreadsheet_path = filemoves.copy_alias_to_path('person_draft_error', path_to_listings, import_directory)
-        spreadsheet_name = os.path.split(spreadsheet_path)[-1]
-        success_dir_wildcarded = path_to_listings['archive/person']
-        success_dir = success_dir_wildcarded[:-2]
-        success_path = os.path.join(success_dir, spreadsheet_name)
+    def xtest_incremental_with_errors(self):
+        import_directory_path = file_utilities.get_path_from_alias('person_draft_error')
+        import_name = os.path.split(import_path)[-1]
+        dest_path = file_utilities.get_path_from_alias('import lines person directory')
+        archive_directory = file_utilities.get_path_from_alias('archive_directory/person')
+        archive_path = os.path.join(archive_directory, import_name)
 
-        success, history = action.do_a_work_item(path_to_listings, connect=connect)
+        file_utilities.copy_file_path_to_dir(import_path, dest_path)
+        success, history = action.do_a_work_item(connect=connect)
         (first_command, vars), first_psycop_response = history[0]
         value_mapping_as_dict = vars[0]
 
         self.assertFalse(success)
         self.assertIn('INSERT INTO', first_command)
         self.assertTrue(value_mapping_as_dict.keys())
-        self.assertTrue(os.path.exists(spreadsheet_path))  # import file remains but is changed
-        self.assertTrue(os.path.exists(success_path))  # successful import copied here for safetyZ
+        self.assertTrue(os.path.exists(import_path))  # import file remains but is changed
+        self.assertTrue(os.path.exists(archive_path))  # successful import copied here for safetyZ
 
 
-    def test_work_to_do(self):
+    def xtest_work_to_do(self):
         self.assertFalse('Line_at_a_time has no problem when the whole file is clean and imports all lines')
         self.assertFalse('test_action cleans up after itself, tests various end cases')
 

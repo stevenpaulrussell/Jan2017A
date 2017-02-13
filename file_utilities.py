@@ -59,20 +59,20 @@ def clean_and_return_path(alias):
     return my_path
 
 
-def copy_file_path_to_alias_named_directory(source_file_path, alias):
-    """Copy specified file to a directory named by alias in locator.  Use for test and moving imports after done."""
-    dest_path = file_listings[alias]
-    dest_dir, file_name_must_be_star = os.path.split(dest_path)
-    if file_name_must_be_star != '*':
-        msg = 'alias {} shows path {} filename "{}" not "*"'.format(alias, dest_path, file_name_must_be_star)
-        raise FileMovesSurprise(msg)
-    return copy_file_path_to_dir(source_file_path, dest_dir)
-
-
-def copy_alias_to_path(alias, path_for_copy):
-    """Copy a file named in a 'locator' spreadsheet to a directory specified by path_for_copy. Return copied to path"""
-    source_path = file_listings[alias]
-    return copy_file_path_to_dir(source_path, path_for_copy)
+# def copy_file_path_to_alias_named_directory(source_file_path, alias):
+#     """Copy specified file to a directory named by alias in locator.  Use for test and moving imports after done."""
+#     dest_path = file_listings[alias]
+#     dest_dir, file_name_must_be_star = os.path.split(dest_path)
+#     if file_name_must_be_star != '*':
+#         msg = 'alias {} shows path {} filename "{}" not "*"'.format(alias, dest_path, file_name_must_be_star)
+#         raise FileMovesSurprise(msg)
+#     return copy_file_path_to_dir(source_file_path, dest_dir)
+#
+#
+# def copy_alias_to_path(alias, path_for_copy):
+#     """Copy a file named in a 'locator' spreadsheet to a directory specified by path_for_copy. Return copied to path"""
+#     source_path = file_listings[alias]
+#     return copy_file_path_to_dir(source_path, path_for_copy)
 
 
 def copy_file_path_to_dir(source_file_path, dir_path):
