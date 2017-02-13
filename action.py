@@ -18,9 +18,13 @@ def do_a_work_item(connect):
         change = sentry.work_list.pop(0)
         insert_cmd = sql_command_library.read_db_insertion_commands()[change.table_name]
         if change.action == 'import whole':
-            return import_whole_sheet(change, insert_cmd, connect)
+            success, history = import_whole_sheet(change, insert_cmd, connect)
+            sentry.poll_imports()   # Because the contents of directories may have changed
+            return success, history
         elif change.action == 'import by line':
-            return import_line_at_a_time(change, insert_cmd, connect)
+            success, history = import_line_at_a_time(change, insert_cmd, connect)
+            sentry.poll_imports()   # Because the contents of directories may have changed
+            return success, history
         else:
             msg = 'change.action "{}" not recognized'.format(change.action)
             raise ActionException(msg)

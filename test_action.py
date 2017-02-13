@@ -29,9 +29,9 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         setup_common_for_test.clean_directories()
 
     def test_can_find_and_import_whole_tables(self):
-        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        self.assertEqual(len(sentry.work_list), 0)      # File added in setUp not yet noticed
         sentry.poll_imports()
-        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        self.assertTrue(len(sentry.work_list) == 1)
         success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
         (cmd, vars), error_msg = history[0]
         self.assertTrue(success)
@@ -44,19 +44,8 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         import_path = file_utilities.get_path_from_alias('import whole person directory')
         archive_path = file_utilities.get_path_from_alias('archive_directory/person')
         before_import, before_archive = next(os.walk(import_path)), next(os.walk(archive_path))
-        sentry.poll_imports()
-        before_work_list_length = len(sentry.work_list)
-        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-        (cmd, vars), error_msg = history[0]
-        after_work_list_length = len(sentry.work_list)
+        action.do_a_work_item(connect=dataqueda_constants.LOCAL)
         after_import, after_archive = next(os.walk(import_path)), next(os.walk(archive_path))
-
-        self.assertTrue(success)
-        self.assertEqual(error_msg, None)
-        self.assertEqual(len(vars), 1)
-        self.assertIn('last', vars[0])
-        self.assertEqual(before_work_list_length, 1)
-        self.assertEqual(after_work_list_length, 0)
 
         p, d, import_files = before_import
         self.assertIn(import_file_name, import_files)
@@ -69,27 +58,15 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn(import_file_name, archive_files)
 
 
-
     def test_double_import_whole_tables_generates_right_errors(self):
-        self.assertEqual(len(sentry.work_list), 0)
-        sentry.poll_imports()
-        self.assertEqual(len(sentry.work_list), 1)
         action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-        self.assertEqual(len(sentry.work_list), 0)
-
         dest_path = file_utilities.get_path_from_alias('import whole person directory')
         source_path = file_utilities.get_path_from_alias('person_table_example')
-        file_utilities.copy_file_path_to_dir(source_path, dest_path)
-        sentry.poll_imports()
 
-        dest_path = file_utilities.get_path_from_alias('import whole person directory')
-        source_path = file_utilities.get_path_from_alias('person_table_example')
         file_utilities.copy_file_path_to_dir(source_path, dest_path)
-
         success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-        self.assertTrue(len(sentry.work_list) == 0)  # Work done has cleared the work_list
-
         (cmd, vars), error_msg = history[0]
+
         self.assertFalse(success)
         self.assertTrue(len(error_msg) > 20)
         self.assertEqual(len(vars), 1)
