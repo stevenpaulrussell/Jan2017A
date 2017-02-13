@@ -7,6 +7,7 @@ import file_utilities
 SENTRY_FILE_NAME = '.sentry'
 IMPORT_WHOLE_ACTION_NAME = 'import whole'
 IMPORT_BY_LINE_ACTION_NAME = 'import by line'
+IMPORT_TEST = 'test only'
 
 
 work_list = []              # Read by program importing this file
@@ -63,6 +64,12 @@ class Whole_Spreadsheet_Imports(General_Imports):
     def failure(self, history):
         fail_path = os.path.join(self.import_directory, 'ErRoR_{}'.format(self.file_name))
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.gen_for_failure_spreadsheet(history), fail_path)
+
+
+class Test_Only_Spreadsheet_Imports(Whole_Spreadsheet_Imports):
+    def __init__(self, table_name, import_directory, file_name):
+        super(Test_Only_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
+        self.commit = General_Imports.COMMIT_SELECT['test']
 
 
 class Line_At_A_Time_Imports(General_Imports):
@@ -127,6 +134,11 @@ def enlist_work(new, different, import_listing, path_to_import_directory):
     elif import_listing['action'] == IMPORT_BY_LINE_ACTION_NAME:
         for import_file_name in new:
             work_list.append(Line_At_A_Time_Imports(import_listing['table'], path_to_import_directory, import_file_name))
+        for import_file_name in different:
+            work_list.append(Line_At_A_Time_Imports(import_listing['table'], path_to_import_directory, import_file_name))
+    elif import_listing['action'] == IMPORT_TEST:
+        for import_file_name in new:
+            work_list.append(Test_Only_Spreadsheet_Imports(import_listing['table'], path_to_import_directory, import_file_name))
         for import_file_name in different:
             work_list.append(Line_At_A_Time_Imports(import_listing['table'], path_to_import_directory, import_file_name))
     else:

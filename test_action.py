@@ -73,6 +73,29 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn('last', vars[0])
         self.assertIn('IntegrityError', error_msg)
 
+
+    def test_import_test_only_spreadsheet_works(self):
+        action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        destination_directory = file_utilities.get_path_from_alias('import person test directory')
+        test_path = file_utilities.get_path_from_alias('person_table_example')
+        test_file_name = os.path.split(test_path)[-1]
+        fail_file_name = 'ErRoR_{}'.format(test_file_name)
+
+        file_utilities.copy_file_path_to_dir(test_path, destination_directory)
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+
+        (cmd, vars), error_msg = history[0]
+        p, d, files = next(os.walk(destination_directory))
+
+        self.assertFalse(success)
+        self.assertTrue(len(error_msg) > 20)
+        self.assertEqual(len(vars), 1)
+        self.assertIn('last', vars[0])
+        self.assertIn('IntegrityError', error_msg)
+        self.assertIn(test_file_name, files)
+        self.assertIn(fail_file_name, files)
+
+
     def test_keywords_source_file_and_author_are_available_for_tables(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
