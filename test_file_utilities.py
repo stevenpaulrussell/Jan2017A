@@ -81,5 +81,27 @@ class TestWritingToAn_xlsx(unittest.TestCase):
             self.assertEqual(source_item, copy_item)
 
 
+class TestFileMovesAndAlias(unittest.TestCase):
+    def setUp(self):
+        common.clean_directories(verbose=True)
+
+    def tearDown(self):
+        common.clean_directories(verbose=True)
+
+    def test_move_to_import_folder_using_locator_sheet(self):
+        dest_path = file_utilities.get_path_from_alias('import whole person directory')
+        source_path = file_utilities.get_path_from_alias('person_table_example')
+        file_name = os.path.split(source_path)[-1]
+        path, dirs, files = os.walk(dest_path).__next__()
+        self.assertNotIn(file_name, files)
+        file_utilities.copy_file_path_to_dir(source_path, dest_path)
+        path, dirs, files = os.walk(dest_path).__next__()
+        self.assertEqual(path, dest_path)
+        self.assertEqual(dirs, [])
+        self.assertIn(file_name, files)
+
+
+
+
 if __name__ == '__main__':
     unittest.main()

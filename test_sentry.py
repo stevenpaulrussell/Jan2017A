@@ -69,9 +69,29 @@ class TestSentryGetsFileChanges(unittest.TestCase):
 
 
 class MyTestCase(unittest.TestCase):
-    def test_action_polls_all_directories_for_changes(self):
+    def setUp(self):
+        print('test_sentry.setUp')
+        setup_common_for_test.clean_directories(verbose=True)
+
+    def tearDown(self):
+        print('test_sentry.tearDown')
+        #setup_common_for_test.clean_directories(verbose=True)
+
+
+    def test_action_polls_all_directories_for_changes_sees_no_changes_if_are_none(self):
         sentry.path_to_listings = setup_common_for_test.test_directory
+        sentry.work_list = []
         sentry.poll_imports()
+        self.assertFalse(sentry.work_list)
+
+    def test_action_polls_all_directories_for_changes_does_see_changes(self):
+        sentry.path_to_listings = setup_common_for_test.test_directory
+        sentry.work_list = []
+        dest_path = file_utilities.get_path_from_alias('import whole person directory')
+        source_path = file_utilities.get_path_from_alias('person_table_example')
+        file_utilities.copy_file_path_to_dir(source_path, dest_path)
+        sentry.poll_imports()
+        self.assertTrue(sentry.work_list)
         if sentry.work_list:
             print('Seeing {} work items'.format(len(sentry.work_list)))
             for work_item in sentry.work_list:
