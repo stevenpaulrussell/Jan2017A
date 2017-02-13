@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import file_utilities
 
@@ -10,7 +11,12 @@ LOCATOR_NAME = 'locator_for_test.xlsx'
 file_utilities.read_file_listings(os.path.join(TEST_SOURCE_PATH, LOCATOR_NAME))
 test_directory = file_utilities.file_listings
 
-CLEANS = ('sql_reports_directory', 'archive_directory', 'import whole person directory', 'import lines person directory')
+CLEANS = ('sql_reports_directory',
+          'archive_directory',
+          'archive_directory/person',
+          'import whole person directory',
+          'import lines person directory',
+          )
 
 def clean_directories(verbose=False):
     def vprint(astring):

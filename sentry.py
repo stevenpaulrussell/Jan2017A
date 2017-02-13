@@ -3,7 +3,6 @@ import json
 from collections import OrderedDict
 
 import file_utilities
-import filemoves
 
 SENTRY_FILE_NAME = '.sentry'
 IMPORT_WHOLE_ACTION_NAME = 'import whole'
@@ -36,7 +35,10 @@ class General_Imports(object):
             yield keyed_values
 
     def groom_psycopg_error_message(self, psycopg_error_msg):
-        short_error, error_detail = psycopg_error_msg.split('DETAIL:')
+        try:
+            short_error, error_detail = psycopg_error_msg.split('DETAIL:')
+        except ValueError:
+            short_error, error_detail = psycopg_error_msg, ' '
         short_error = short_error.replace("'", '').replace('\\n', '')
         error_detail = error_detail.replace(",", '').replace('\\n', '')
         return {'error': short_error, 'error_detail': error_detail}
@@ -53,10 +55,10 @@ class Whole_Spreadsheet_Imports(General_Imports):
         super(Whole_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
 
     def success(self):
-        destination_alias = 'archive/{}'.format(self.table_name)
-        dest = filemoves.copy_file_path_to_alias_named_directory(self.file_path, destination_alias)
-        if dest:
-            os.remove(self.file_path)
+        archive_directory = file_utilities.get_path_from_alias('archive_directory')
+        destination_directory = '{}/{}'.format(archive_directory, self.table_name)
+        file_utilities.copy_file_path_to_dir(self.file_path, destination_directory)
+        os.remove(self.file_path)
 
     def failure(self, history):
         fail_path = os.path.join(self.import_directory, 'ErRoR_{}'.format(self.file_name))
@@ -95,7 +97,7 @@ class Line_At_A_Time_Imports(General_Imports):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
 
     def update_archive_file(self):
-        archive_directory_path = os.join(file_utilities.get_path_from_alias('archive'), self.table_name)
+        archive_directory_path = os.path.join(file_utilities.get_path_from_alias('archive_directory'), self.table_name)
         archive_path = os.path.join(archive_directory_path, self.file_name)
         if os.path.exists(archive_path):
             self.previously_imported_lines = [l for l in file_utilities.spreadsheet_keyvalue_generator(archive_path)]
@@ -110,37 +112,24 @@ def poll_imports():
         path_to_import_directory = os.path.join(import_listing['base'], import_listing['path'])
         new, different, missing = take_roll_of_new_changes_and_missing(path_to_import_directory)
         if any((new, different)):
-            enlist_work(new, different, import_listing)
+            enlist_work(new, different, import_listing, path_to_import_directory)
             break
 
 
-def enlist_work(new, different, import_listing):
+def enlist_work(new, different, import_listing, path_to_import_directory):
     if import_listing['action'] == IMPORT_WHOLE_ACTION_NAME:
-        enlist_whole_table_work(new, different, import_listing)
+        for import_file_name in new:
+            work_list.append(Whole_Spreadsheet_Imports(import_listing['table'], path_to_import_directory, import_file_name))
+        if different:
+            raise SentryException('{} changed in {} not allowed'.format(different, path_to_import_directory))
     elif import_listing['action'] == IMPORT_BY_LINE_ACTION_NAME:
-        enlist_line_at_a_time_work(new, different, import_listing)
+        for import_file_name in new:
+            work_list.append(Line_At_A_Time_Imports(import_listing['table'], path_to_import_directory, import_file_name))
+        for import_file_name in different:
+            work_list.append(Line_At_A_Time_Imports(import_listing['table'], path_to_import_directory, import_file_name))
     else:
         raise SentryException('to_do "{}" in {} not allowed'.format(import_listing['action'], import_listing['path']))
 
-
-def enlist_whole_table_work(new, different, import_listing):
-
-
-    table, import_directory = import_listing['table'], import_listing['path']
-
-
-    for import_file_name in new:
-        work_list.append(Whole_Spreadsheet_Imports(table, import_directory, import_file_name))
-    if different:
-        raise SentryException('{} changed in {} not allowed'.format(different, import_directory))
-
-
-def enlist_line_at_a_time_work(new, different, import_listing):
-    table, import_directory = import_listing['table'], import_listing['path']
-    for import_file_name in new:
-        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
-    for import_file_name in different:
-        work_list.append(Line_At_A_Time_Imports(table, import_directory, import_file_name))
 
 
 def take_roll_of_new_changes_and_missing(apath):
