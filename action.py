@@ -84,7 +84,7 @@ def make_database_views(connect):
     return success, history
 
 
-def run_database_queries(path_to_listings, connect):
+def run_database_queries(connect):
     troubles = []
     report_directory = file_utilities.get_path_from_alias('sql_reports_directory')
     query_builder = sql_command_library.read_query_creation_commands()
@@ -105,7 +105,7 @@ def run_database_queries(path_to_listings, connect):
                     pass
         else:
             troubles.append(history)
-    tpath = path_to_listings['sql_query_trouble']
+    tpath = os.path.join(report_directory, 'sql_query_trouble.xlsx')
     if troubles:
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((t for t in troubles), tpath)
         print('\nWrite trouble report {}'.format(troubles))
