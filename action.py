@@ -34,7 +34,7 @@ def import_whole_sheet(change, insert_cmd, connect):
         success, history = general_insert(insert_cmd, change.import_lines, connect=connect, **change.command_keys)
         if success:
             add_to_build_history(change.build_line, connect=connect)
-            change.success()
+            change.success(history)
         else:
             change.failure(history)
         return success, history

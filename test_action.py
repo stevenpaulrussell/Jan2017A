@@ -7,11 +7,79 @@ import setup_common_for_test
 
 import dataqueda_constants
 import file_utilities
+from dataqueda_constants import LOCAL
+
+
+class CanTestImports(unittest.TestCase):
+    def setUp(self):
+        setup_common_for_test.clean_directories()
+        tableset = action.get_current_tableset(connect=LOCAL)
+        action.destroy_database_tables(tableset, connect=LOCAL)
+        action.make_database_tables(connect=dataqueda_constants.LOCAL)
+        action.make_database_views(connect=dataqueda_constants.LOCAL)
+        sentry.poll_imports()
+        sentry.work_list = []
+
+    def tearDown(self):
+        sentry.poll_imports()
+        sentry.work_list = []
+        tableset = action.get_current_tableset(connect=dataqueda_constants.LOCAL)
+        if tableset:
+            action.destroy_database_tables(tableset, connect=dataqueda_constants.LOCAL)
+        setup_common_for_test.clean_directories()
+
+    def test_import_test_only_spreadsheet_fails_to_import_even_if_could(self):
+        destination_directory = file_utilities.get_path_from_alias('import person test directory')
+        test_path = file_utilities.get_path_from_alias('person_table_example')
+        test_file_name = os.path.split(test_path)[-1]
+        success_file_name = 'SuCcEsS_{}'.format(test_file_name)
+
+        file_utilities.copy_file_path_to_dir(test_path, destination_directory)
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+
+        (cmd, vars), error_msg = history[0]
+        p, d, files = next(os.walk(destination_directory))
+
+        self.assertTrue(success)
+        self.assertFalse(error_msg)
+        self.assertIn(test_file_name, files)
+        self.assertIn(success_file_name, files)
+
+
+    def test_import_test_only_spreadsheet_fails_properly(self):
+        dest_path = file_utilities.get_path_from_alias('import whole person directory')
+        source_path = file_utilities.get_path_from_alias('person_table_example')
+        file_utilities.copy_file_path_to_dir(source_path, dest_path)
+        action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        destination_directory = file_utilities.get_path_from_alias('import person test directory')
+        test_path = file_utilities.get_path_from_alias('person_table_example')
+        test_file_name = os.path.split(test_path)[-1]
+        fail_file_name = 'ErRoR_{}'.format(test_file_name)
+
+        file_utilities.copy_file_path_to_dir(test_path, destination_directory)
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+
+        (cmd, vars), error_msg = history[0]
+        p, d, files = next(os.walk(destination_directory))
+
+        self.assertFalse(success)
+        self.assertTrue(len(error_msg) > 20)
+        self.assertEqual(len(vars), 1)
+        self.assertIn('last', vars[0])
+        self.assertIn('IntegrityError', error_msg)
+        self.assertIn(test_file_name, files)
+        self.assertIn(fail_file_name, files)
+
+
+
+
 
 
 class CanProperlyHandleWholeTableImports(unittest.TestCase):
     def setUp(self):
         setup_common_for_test.clean_directories()
+        tableset = action.get_current_tableset(connect=LOCAL)
+        action.destroy_database_tables(tableset, connect=LOCAL)
         action.make_database_tables(connect=dataqueda_constants.LOCAL)
         action.make_database_views(connect=dataqueda_constants.LOCAL)
         sentry.poll_imports()
@@ -74,28 +142,6 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn('IntegrityError', error_msg)
 
 
-    def test_import_test_only_spreadsheet_works(self):
-        action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-        destination_directory = file_utilities.get_path_from_alias('import person test directory')
-        test_path = file_utilities.get_path_from_alias('person_table_example')
-        test_file_name = os.path.split(test_path)[-1]
-        fail_file_name = 'ErRoR_{}'.format(test_file_name)
-
-        file_utilities.copy_file_path_to_dir(test_path, destination_directory)
-        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-
-        (cmd, vars), error_msg = history[0]
-        p, d, files = next(os.walk(destination_directory))
-
-        self.assertFalse(success)
-        self.assertTrue(len(error_msg) > 20)
-        self.assertEqual(len(vars), 1)
-        self.assertIn('last', vars[0])
-        self.assertIn('IntegrityError', error_msg)
-        self.assertIn(test_file_name, files)
-        self.assertIn(fail_file_name, files)
-
-
     def test_keywords_source_file_and_author_are_available_for_tables(self):
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
@@ -112,6 +158,10 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
 class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCase):
     def setUp(self):
         setup_common_for_test.clean_directories()
+        tableset = action.get_current_tableset(connect=LOCAL)
+        action.destroy_database_tables(tableset, connect=LOCAL)
+        action.make_database_tables(connect=dataqueda_constants.LOCAL)
+        action.make_database_views(connect=dataqueda_constants.LOCAL)
         sentry.poll_imports()
         sentry.work_list = []
         dest_path = file_utilities.get_path_from_alias('import lines person directory')

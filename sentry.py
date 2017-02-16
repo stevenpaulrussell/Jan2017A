@@ -40,6 +40,9 @@ class General_Imports(object):
             short_error, error_detail = psycopg_error_msg.split('DETAIL:')
         except ValueError:
             short_error, error_detail = psycopg_error_msg, ' '
+        except AttributeError:
+            short_error, error_detail = ' ', ' '
+
         short_error = short_error.replace("'", '').replace('\\n', '')
         error_detail = error_detail.replace(",", '').replace('\\n', '')
         return {'error': short_error, 'error_detail': error_detail}
@@ -55,7 +58,7 @@ class Whole_Spreadsheet_Imports(General_Imports):
         self.commit = General_Imports.COMMIT_SELECT[self.action]
         super(Whole_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
 
-    def success(self):
+    def success(self, *args):
         archive_directory = file_utilities.get_path_from_alias('archive_directory')
         destination_directory = '{}/{}'.format(archive_directory, self.table_name)
         file_utilities.copy_file_path_to_dir(self.file_path, destination_directory)
@@ -70,6 +73,10 @@ class Test_Only_Spreadsheet_Imports(Whole_Spreadsheet_Imports):
     def __init__(self, table_name, import_directory, file_name):
         super(Test_Only_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
         self.commit = General_Imports.COMMIT_SELECT['test']
+
+    def success(self, history):
+        success_path = os.path.join(self.import_directory, 'SuCcEsS_{}'.format(self.file_name))
+        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source(self.gen_for_failure_spreadsheet(history), success_path)
 
 
 class Line_At_A_Time_Imports(General_Imports):

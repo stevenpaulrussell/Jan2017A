@@ -130,8 +130,8 @@ class InsertFromImportsIncrementally(unittest.TestCase):
         self.assertTrue(os.path.exists(archive_path))  # successful import copied here for safetyZ
 
 
-    def xtest_work_to_do(self):
-        self.assertFalse('Line_at_a_time has no problem when the whole file is clean and imports all lines')
+    def test_work_to_do(self):
+        self.assertFalse('Sentry.groom_psycopg_error_message was changed in this branch to avoid exception if no error.')
 
 
 
