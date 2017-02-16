@@ -172,9 +172,7 @@ def take_roll_of_new_changes_and_missing(apath):
 def get_current_file_stats(apath):
     current_file_data = {}
     for file_name in os.walk(apath).__next__()[-1]:
-        if file_name[0] == '.':
-            continue
-        if 'ErRoR_' in file_name:
+        if any([file_name[0] == '.', 'ErRoR_' in file_name, 'SuCcEsS_' in file_name]):
             continue
         current_file_data[file_name] = os.stat(os.path.join(apath, file_name)).st_mtime
     return current_file_data
