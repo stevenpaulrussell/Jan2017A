@@ -19,11 +19,10 @@ class Commander(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def __init__(self, connect, **kwds):
-        self.my_kwds = {'commit': False}
-        self.my_kwds.update(kwds)
-        if self.my_kwds['commit'] not in (False, "single", "group"):
-            raise CommanderException('"commit" keyword "{}".'.format(self.my_kwds['commit']))
+    def __init__(self, connect, commit=False):
+        if commit not in (False, "single", "group"):
+            raise CommanderException('"commit {}"'.format(commit))
+        self.commit = commit
         self.con = psycopg2.connect(**connect)
         self.cur = self.con.cursor()
         self.cmd_history = []
@@ -32,7 +31,7 @@ class Commander(object):
 
     def close(self):
         self.success = not any(self.result_history)
-        if self.success and self.my_kwds['commit'] == 'group':
+        if self.success and self.commit == 'group':
             self.con.commit()
         self.cur.close()
         self.con.close()
@@ -59,7 +58,7 @@ class Commander(object):
             self.con.rollback()
             return repr(e)
         else:
-            if self.my_kwds['commit'] == 'single':
+            if self.commit == 'single':
                 self.con.commit()
 
     def _valuelist_cmd(self, cmd):

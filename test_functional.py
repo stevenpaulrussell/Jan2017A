@@ -130,9 +130,6 @@ class InsertFromImportsIncrementally(unittest.TestCase):
         self.assertTrue(os.path.exists(archive_path))  # successful import copied here for safetyZ
 
 
-    def test_work_to_do(self):
-        self.assertFalse('Sentry.groom_psycopg_error_message was changed in this branch to avoid exception if no error.')
-
 
 
 

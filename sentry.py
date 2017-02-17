@@ -19,15 +19,15 @@ class SentryException(Exception):
 
 class General_Imports(object):
     """Super class holding logic and variable for doing psycopg2 sql imports using spreadsheets"""
-    COMMIT_SELECT = {IMPORT_WHOLE_ACTION_NAME: 'group', IMPORT_BY_LINE_ACTION_NAME: 'single', 'test': False}
     def __init__(self, table_name, import_directory, file_name):
         self.table_name = table_name
         self.import_directory = import_directory
         self.file_name = file_name
         self.file_path = os.path.join(import_directory, file_name)
         author = 'from spreadsheet or cloud AAA'
-        self.command_keys = dict(author=author, source_file=file_name, commit=self.commit)
+        self.command_keys = dict(author=author, source_file=file_name)
         self.build_line = dict(filename=file_name, story=author, author=author, incorporated='2015/12/26')
+        self.commit = 'Must be one of False, "single", "group"'
 
     def gen_for_failure_spreadsheet(self, history):
         for index, ((cmd, vars), error) in enumerate(history):
@@ -54,9 +54,9 @@ class General_Imports(object):
 
 class Whole_Spreadsheet_Imports(General_Imports):
     def __init__(self, table_name, import_directory, file_name):
-        self.action = IMPORT_WHOLE_ACTION_NAME
-        self.commit = General_Imports.COMMIT_SELECT[self.action]
         super(Whole_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
+        self.action = IMPORT_WHOLE_ACTION_NAME
+        self.commit = 'group'
 
     def success(self, *args):
         archive_directory = file_utilities.get_path_from_alias('archive_directory')
@@ -72,7 +72,8 @@ class Whole_Spreadsheet_Imports(General_Imports):
 class Test_Only_Spreadsheet_Imports(Whole_Spreadsheet_Imports):
     def __init__(self, table_name, import_directory, file_name):
         super(Test_Only_Spreadsheet_Imports, self).__init__(table_name, import_directory, file_name)
-        self.commit = General_Imports.COMMIT_SELECT['test']
+        self.commit = False
+        self.command_keys['test'] = True
 
     def success(self, history):
         success_path = os.path.join(self.import_directory, 'SuCcEsS_{}'.format(self.file_name))
@@ -81,12 +82,12 @@ class Test_Only_Spreadsheet_Imports(Whole_Spreadsheet_Imports):
 
 class Line_At_A_Time_Imports(General_Imports):
     def __init__(self, table_name, import_directory, file_name):
+        super(Line_At_A_Time_Imports, self).__init__(table_name, import_directory, file_name)
         self.action = IMPORT_BY_LINE_ACTION_NAME
-        self.commit = General_Imports.COMMIT_SELECT[self.action]
+        self.commit = 'single'
         self.previously_imported_lines = []
         self.newly_imported_lines = []
         self.failed_line = None
-        super(Line_At_A_Time_Imports, self).__init__(table_name, import_directory, file_name)
 
     def success(self, one_line):
         one_line.update({'error': ' ', 'error_detail': ' '})

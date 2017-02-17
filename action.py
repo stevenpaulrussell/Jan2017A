@@ -15,41 +15,43 @@ class ActionException(Exception):
 def do_a_work_item(connect):
     sentry.poll_imports()
     if sentry.work_list:
-        change = sentry.work_list.pop(0)
-        insert_cmd = sql_command_library.read_db_insertion_commands()[change.table_name]
-        if change.action == 'import whole':
-            success, history = import_whole_sheet(change, insert_cmd, connect)
+        work = sentry.work_list.pop(0)
+        try:
+            work_spec = {'import whole': import_whole_sheet, 'import by line': import_line_at_a_time}[work.action]
+        except KeyError:
+            raise ActionException('change.action "{}" not recognized'.format(work.action))
+        else:
+            insert_cmd = sql_command_library.read_db_insertion_commands()[work.table_name]
+            success, history = work_spec(work, insert_cmd, connect)
             sentry.poll_imports()   # Because the contents of directories may have changed
             return success, history
-        elif change.action == 'import by line':
-            success, history = import_line_at_a_time(change, insert_cmd, connect)
-            sentry.poll_imports()   # Because the contents of directories may have changed
-            return success, history
+
+
+def import_whole_sheet(work, insert_cmd, connect):
+    with cursors.Commander(connect, work.commit) as cmdr:
+        for one_line in work.import_lines:
+            one_line.update(work.command_keys)
+            cmdr.do_cmd(insert_cmd, one_line)
+    if cmdr.success:
+        add_to_build_history(work.build_line, connect=connect)
+        work.success(cmdr.history)
+    else:
+        work.failure(cmdr.history)
+    return cmdr.success, cmdr.history
+
+
+def import_line_at_a_time(work, insert_cmd, connect):
+    for one_line in work.import_lines:
+        with cursors.Commander(connect, work.commit) as cmdr:
+            one_line.update(work.command_keys)
+            cmdr.do_cmd(insert_cmd, one_line)
+        if cmdr.success:
+            work.success(one_line)
         else:
-            msg = 'change.action "{}" not recognized'.format(change.action)
-            raise ActionException(msg)
-
-
-def import_whole_sheet(change, insert_cmd, connect):
-        success, history = general_insert(insert_cmd, change.import_lines, connect=connect, **change.command_keys)
-        if success:
-            add_to_build_history(change.build_line, connect=connect)
-            change.success(history)
-        else:
-            change.failure(history)
-        return success, history
-
-
-def import_line_at_a_time(change, insert_cmd, connect):
-        for one_line in change.import_lines:
-            success, history = single_insert(insert_cmd, one_line, connect=connect, **change.command_keys)
-            if success:
-                change.success(one_line)
-            else:
-                change.failure(history)  # history will show the error
-                break # stop the line iteration
-        change.done()
-        return success, history
+            work.failure(cmdr.history)
+            break
+        work.done()
+    return cmdr.success, cmdr.history
 
 
 def add_to_build_history(build_line, connect):
@@ -116,29 +118,6 @@ def run_database_queries(connect):
             pass
     return not troubles, history
 
-
-
-def general_insert(insert_cmd, import_lines, commit, connect, **kwds):
-    with cursors.Commander(connect, commit=commit, **kwds) as cmdr:
-        for one_line in import_lines:
-            try:
-                one_line.update(author=kwds['author'])
-                one_line.update(source_file=kwds['source_file'])
-            except KeyError:
-                pass
-            cmdr.do_cmd(insert_cmd, one_line)
-    return cmdr.success, cmdr.history
-
-
-def single_insert(insert_cmd, one_line, commit, connect, **kwds):
-    with cursors.Commander(connect, commit=commit, **kwds) as cmdr:
-        try:
-            one_line.update(author=kwds['author'])
-            one_line.update(source_file=kwds['source_file'])
-        except KeyError:
-            pass
-        cmdr.do_cmd(insert_cmd, one_line)
-    return cmdr.success, cmdr.history
 
 
 def run_database_commands_as_group(builder, connect, commit):

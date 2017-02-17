@@ -4,6 +4,7 @@ import unittest
 import action
 import sentry
 import setup_common_for_test
+import cursors
 
 import dataqueda_constants
 import file_utilities
@@ -46,6 +47,8 @@ class CanTestImports(unittest.TestCase):
         self.assertIn(success_file_name, files)
 
 
+
+
     def test_import_test_only_spreadsheet_fails_properly(self):
         dest_path = file_utilities.get_path_from_alias('import whole person directory')
         source_path = file_utilities.get_path_from_alias('person_table_example')
@@ -69,6 +72,13 @@ class CanTestImports(unittest.TestCase):
         self.assertIn('IntegrityError', error_msg)
         self.assertIn(test_file_name, files)
         self.assertIn(fail_file_name, files)
+
+        with cursors.Commander(connect=LOCAL) as cmdr:
+            cmdr.do_query('SELECT first, last, key_date FROM person')
+        success, history, report = cmdr.success, cmdr.history, cmdr.query_response_gen
+        report = [line for line in report]
+        print(success, history, report)
+
 
 
 
