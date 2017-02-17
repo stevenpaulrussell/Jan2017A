@@ -34,10 +34,8 @@ class CanTestImports(unittest.TestCase):
         test_path = file_utilities.get_path_from_alias('person_table_example')
         test_file_name = os.path.split(test_path)[-1]
         success_file_name = 'SuCcEsS_{}'.format(test_file_name)
-
         file_utilities.copy_file_path_to_dir(test_path, destination_directory)
         success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-
         (cmd, vars), error_msg = history[0]
         p, d, files = next(os.walk(destination_directory))
 
@@ -46,43 +44,29 @@ class CanTestImports(unittest.TestCase):
         self.assertIn(test_file_name, files)
         self.assertIn(success_file_name, files)
 
+        with cursors.Commander(connect=LOCAL) as cmdr:
+            cmdr.do_query('SELECT first, last, key_date FROM person')
+        success, history, report = cmdr.success, cmdr.history, [item for item in cmdr.query_response_gen]
 
+        self.assertEqual(len(report), 1)
+        self.assertDictEqual(report[0], {'first': ' ', 'last': ' ', 'key_date FROM person': ' '})
 
 
     def test_import_test_only_spreadsheet_fails_properly(self):
-        dest_path = file_utilities.get_path_from_alias('import whole person directory')
-        source_path = file_utilities.get_path_from_alias('person_table_example')
-        file_utilities.copy_file_path_to_dir(source_path, dest_path)
-        action.do_a_work_item(connect=dataqueda_constants.LOCAL)
         destination_directory = file_utilities.get_path_from_alias('import person test directory')
-        test_path = file_utilities.get_path_from_alias('person_table_example')
+        test_path = file_utilities.get_path_from_alias('person_draft_error')
         test_file_name = os.path.split(test_path)[-1]
         fail_file_name = 'ErRoR_{}'.format(test_file_name)
 
         file_utilities.copy_file_path_to_dir(test_path, destination_directory)
         success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-
-        (cmd, vars), error_msg = history[0]
+        error_msg = [e for (a, e) in history if e][0]
         p, d, files = next(os.walk(destination_directory))
 
         self.assertFalse(success)
-        self.assertTrue(len(error_msg) > 20)
-        self.assertEqual(len(vars), 1)
-        self.assertIn('last', vars[0])
         self.assertIn('IntegrityError', error_msg)
         self.assertIn(test_file_name, files)
         self.assertIn(fail_file_name, files)
-
-        with cursors.Commander(connect=LOCAL) as cmdr:
-            cmdr.do_query('SELECT first, last, key_date FROM person')
-        success, history, report = cmdr.success, cmdr.history, cmdr.query_response_gen
-        report = [line for line in report]
-        print(success, history, report)
-
-
-
-
-
 
 
 class CanProperlyHandleWholeTableImports(unittest.TestCase):
