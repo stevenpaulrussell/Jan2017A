@@ -144,9 +144,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn('source_file', vars[0])
         self.assertIn('person', vars[0]['source_file'])
         self.assertIn('author', vars[0])
-        self.assertIn('from spreadsheet or cloud AAA', vars[0]['author'])
-
-
+        self.assertIn('steve', vars[0]['author'])
 
 
 class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCase):
@@ -187,7 +185,7 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         self.assertIn('source_file', vars[0])
         self.assertIn('person', vars[0]['source_file'])
         self.assertIn('author', vars[0])
-        self.assertIn('from spreadsheet or cloud AAA', vars[0]['author'])
+        self.assertIn('tania', vars[0]['author'])
 
 
 class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):
