@@ -20,11 +20,19 @@ class MyTestCase(unittest.TestCase):
         print('Ready to go in test_running')
 
     def test_go_for_10_minutes(self):
-        for count in range(1200):
+        for count in range(600):
             if not count%30:
                 print(count)
-            action.do_a_work_item(LOCAL)
-            time.sleep(.5)
+            try:
+                success, history = action.do_a_work_item(LOCAL)
+            except TypeError:
+                pass
+            else:
+                if success:
+                    action.run_database_queries(LOCAL)
+                else:
+                    print('failure', history)
+            time.sleep(1)
         self.assertTrue('Already done')
 
 
