@@ -62,8 +62,8 @@ class Whole_Spreadsheet_Imports(General_Imports):
         self.commit = 'group'
 
     def success(self, *args):
-        archive_directory = file_utilities.get_path_from_alias('archive_directory')
-        destination_directory = '{}/{}'.format(archive_directory, self.table_name)
+        archive_directory_name = 'archive_directory/{}'.format(self.table_name)
+        destination_directory = file_utilities.get_path_from_alias(archive_directory_name)
         file_utilities.copy_file_path_to_dir(self.file_path, destination_directory)
         os.remove(self.file_path)
 
@@ -114,13 +114,14 @@ class Line_At_A_Time_Imports(General_Imports):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
 
     def update_archive_file(self):
-        archive_directory_path = os.path.join(file_utilities.get_path_from_alias('archive_directory'), self.table_name)
-        archive_path = os.path.join(archive_directory_path, self.file_name)
-        if os.path.exists(archive_path):
-            self.previously_imported_lines = [l for l in file_utilities.spreadsheet_keyvalue_generator(archive_path)]
+        archive_directory_name = 'archive_directory/{}'.format(self.table_name)
+        archive_directory_path = file_utilities.get_path_from_alias(archive_directory_name)
+        archive_file_path = os.path.join(archive_directory_path, self.file_name)
+        if os.path.exists(archive_file_path):
+            self.previously_imported_lines = [l for l in file_utilities.spreadsheet_keyvalue_generator(archive_file_path)]
         to_rewrite = [line for line in self.previously_imported_lines + self.newly_imported_lines]
         if to_rewrite:
-            file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in to_rewrite), archive_path)
+            file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in to_rewrite), archive_file_path)
 
 
 def poll_imports():
@@ -153,7 +154,6 @@ def enlist_work(new, different, path_to_import_directory, work_spec):
             work_list.append(Line_At_A_Time_Imports(path_to_import_directory, import_file_name, work_spec))
     else:
         raise SentryException('to_do "{}" in {} not allowed'.format(work_spec['action'], work_spec['path']))
-
 
 
 def take_roll_of_new_changes_and_missing(apath):
