@@ -63,8 +63,8 @@ class Whole_Spreadsheet_Imports(General_Imports):
 
     def success(self, *args):
         archive_directory_name = 'archive_directory/{}'.format(self.table_name)
-        destination_directory = file_utilities.get_path_from_alias(archive_directory_name)
-        file_utilities.copy_file_path_to_dir(self.file_path, destination_directory)
+        archive_directory_path = file_utilities.get_path_from_alias(archive_directory_name)
+        file_utilities.copy_file_path_to_dir(self.file_path, archive_directory_path)
         os.remove(self.file_path)
 
     def failure(self, history):
