@@ -12,7 +12,6 @@ file_utilities.read_file_listings(os.path.join(TEST_SOURCE_PATH, LOCATOR_NAME))
 test_directory = file_utilities.file_listings
 
 CLEANS = ('sql_reports_directory',
-          'archive_directory',
           'archive_directory/person',
           'import whole person directory',
           'import lines person directory',
