@@ -29,7 +29,11 @@ class General_Imports(object):
         story = work_spec.setdefault('story', 'from spreadsheet or cloud AAA')
         todays_date = datetime.today().strftime('%Y/%m/%d')   # '2015/12/26'
         self.command_keys = dict(author=author, source_file=file_name)
-        self.build_line = OrderedDict(filename=file_name, story=story, author=author, incorporated=todays_date)
+        self.build_line = OrderedDict()
+        self.build_line['filename'] = file_name
+        self.build_line['story'] = story
+        self.build_line['author'] = author
+        self.build_line['incorporated'] = todays_date
         self.commit = 'NOTE ---> Must be one of False, "single", "group"  <----'
 
     @property
