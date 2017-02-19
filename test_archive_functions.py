@@ -53,7 +53,8 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertFalse(True)
 
 
-
+    def test_one_line_insert(self):
+        self.assertFalse('Think about how to handle the draft spreadsheets in the archive locator')
 
 
 
