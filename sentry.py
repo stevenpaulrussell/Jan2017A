@@ -117,11 +117,7 @@ class Line_At_A_Time_Imports(General_Imports):
         archive_directory_name = 'archive_directory/{}'.format(self.table_name)
         archive_directory_path = file_utilities.get_path_from_alias(archive_directory_name)
         archive_file_path = os.path.join(archive_directory_path, self.file_name)
-        if os.path.exists(archive_file_path):
-            self.previously_imported_lines = [l for l in file_utilities.spreadsheet_keyvalue_generator(archive_file_path)]
-        to_rewrite = [line for line in self.previously_imported_lines + self.newly_imported_lines]
-        if to_rewrite:
-            file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in to_rewrite), archive_file_path)
+        file_utilities.append_to_xlsx_using_list_of_lines(self.newly_imported_lines, archive_file_path)
 
 
 def poll_imports():
