@@ -117,20 +117,26 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
                 item = ' '
             worksheet.write(row, col, item, centerwrapformat)
 
-    keyvalues = gen_of_dicts.__next__()
-    write_a_row(0, keyvalues.keys())
-    write_a_row(1, keyvalues.values())
+    header = gen_of_dicts.__next__()
+    write_a_row(0, header.keys())
+    write_a_row(1, header.values())
     for gen_number, keyvalues in enumerate(gen_of_dicts):
-        write_a_row(gen_number + 2, keyvalues.values())
+        ordered_row = [keyvalues.setdefault(key, ' ') for key in header.keys() ]
+        write_a_row(gen_number + 2, ordered_row)
     workbook.close()
 
 
 def append_to_xlsx_using_list_of_lines(sequence_of_lines, dest_file_path):
-    try:
-        already_present_lines = [l for l in spreadsheet_keyvalue_generator(dest_file_path)]
-    except (InputSpreadsheetException, FileNotFoundError):
-        already_present_lines = []
-    to_rewrite = already_present_lines + [l for l in sequence_of_lines]
-    if to_rewrite:
-        write_to_xlsx_using_gen_of_dicts_as_source((l for l in to_rewrite), dest_file_path)
+    if not os.path.exists(dest_file_path):
+        write_to_xlsx_using_gen_of_dicts_as_source((l for l in sequence_of_lines), dest_file_path)
+        return dest_file_path
+    else:
+        try:
+            already_present_lines = [l for l in spreadsheet_keyvalue_generator(dest_file_path)]
+        except (InputSpreadsheetException):
+            already_present_lines = []
+        to_rewrite = already_present_lines + [l for l in sequence_of_lines]
+        if to_rewrite:
+            write_to_xlsx_using_gen_of_dicts_as_source((l for l in to_rewrite), dest_file_path)
+            return
 

@@ -124,7 +124,8 @@ class Line_At_A_Time_Imports(General_Imports):
         archive_directory_name = 'archive_directory/{}'.format(self.table_name)
         archive_directory_path = file_utilities.get_path_from_alias(archive_directory_name)
         archive_file_path = os.path.join(archive_directory_path, self.file_name)
-        file_utilities.append_to_xlsx_using_list_of_lines(self.newly_imported_lines, archive_file_path)
+        if file_utilities.append_to_xlsx_using_list_of_lines(self.newly_imported_lines, archive_file_path):
+            self.append_import_to_archive_import_locator()
 
 
 def poll_imports():

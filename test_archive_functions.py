@@ -42,7 +42,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         expected_line = next(file_utilities.spreadsheet_keyvalue_generator(archive_import_locator_path))
         print('debug in test_archive_functions', expected_line)
 
-        self.assertIn(expected_file_name, expected_line['file_name'])
+        self.assertIn(expected_file_name, expected_line['filename'])
 
 
     def test_importing_from_archive_works(self):
@@ -54,7 +54,11 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
 
 
     def test_one_line_insert(self):
-        self.assertFalse('Think about how to handle the draft spreadsheets in the archive locator')
+        self.assertFalse('Have tested one line imports both virgin and post-virgin')
+
+
+    def test_one_line_insert(self):
+        self.assertFalse('Have tested one line imports both virgin and post-virgin')
 
 
 
