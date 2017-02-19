@@ -126,9 +126,10 @@ def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path):
 
 
 def append_to_xlsx_using_list_of_lines(sequence_of_lines, dest_file_path):
-    already_present_lines = []
-    if os.path.exists(dest_file_path):
+    try:
         already_present_lines = [l for l in spreadsheet_keyvalue_generator(dest_file_path)]
+    except (InputSpreadsheetException, FileNotFoundError):
+        already_present_lines = []
     to_rewrite = already_present_lines + [l for l in sequence_of_lines]
     if to_rewrite:
         write_to_xlsx_using_gen_of_dicts_as_source((l for l in to_rewrite), dest_file_path)

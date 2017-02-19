@@ -4,7 +4,6 @@ import unittest
 import action
 import sentry
 import setup_common_for_test
-import cursors
 
 import dataqueda_constants
 import file_utilities
@@ -33,9 +32,21 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         setup_common_for_test.clean_directories()
 
 
-    def test_archive_import_works(self):
+    def test_doing_whole_table_import_appends_data_to_archive_import_directory(self):
+        sentry.poll_imports()
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        self.assertTrue(success)
+        archive_import_locator_path = file_utilities.get_path_from_alias('archive_import_locator')
+        apath = file_utilities.get_path_from_alias('person_table_example')
+        expected_file_name = os.path.split(apath)[-1]
+        expected_line = next(file_utilities.spreadsheet_keyvalue_generator(archive_import_locator_path))
+        print('debug in test_archive_functions', expected_line)
+
+        self.assertIn(expected_file_name, expected_line['file_name'])
+
+
+    def test_importing_from_archive_works(self):
         self.assertFalse(True)
-        self.assertFalse('Am passing the append test in test_file_utilities')
 
 
     def test_archive_integrity_check_works(self):

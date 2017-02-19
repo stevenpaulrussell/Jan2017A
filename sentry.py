@@ -29,12 +29,18 @@ class General_Imports(object):
         story = work_spec.setdefault('story', 'from spreadsheet or cloud AAA')
         todays_date = datetime.today().strftime('%Y/%m/%d')   # '2015/12/26'
         self.command_keys = dict(author=author, source_file=file_name)
-        self.build_line = dict(filename=file_name, story=story, author=author, incorporated=todays_date)
+        self.build_line = OrderedDict(filename=file_name, story=story, author=author, incorporated=todays_date)
         self.commit = 'NOTE ---> Must be one of False, "single", "group"  <----'
 
     @property
     def import_lines(self):
         return file_utilities.spreadsheet_keyvalue_generator(self.file_path)
+
+    def append_import_to_archive_import_locator(self):
+        new_line = self.build_line.copy()
+        new_line.update(table=self.table_name)
+        archive_import_locator_path = file_utilities.get_path_from_alias('archive_import_locator')
+        file_utilities.append_to_xlsx_using_list_of_lines([new_line], archive_import_locator_path)
 
     def gen_for_failure_spreadsheet(self, history):
         for index, ((cmd, vars), error) in enumerate(history):
@@ -66,6 +72,7 @@ class Whole_Spreadsheet_Imports(General_Imports):
         archive_directory_path = file_utilities.get_path_from_alias(archive_directory_name)
         file_utilities.copy_file_path_to_dir(self.file_path, archive_directory_path)
         os.remove(self.file_path)
+        self.append_import_to_archive_import_locator()
 
     def failure(self, history):
         fail_path = os.path.join(self.import_directory, 'ErRoR_{}'.format(self.file_name))
