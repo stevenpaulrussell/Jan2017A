@@ -80,6 +80,17 @@ class TestWritingToAn_xlsx(unittest.TestCase):
             copy_item = copy_gen.__next__()
             self.assertEqual(source_item, copy_item)
 
+    def test_xl_append_works(self):
+        my_lines = [line for line in self.data_generator]
+        file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in my_lines), self.test_write_path)
+        to_append = (my_lines[0], my_lines[1])
+        file_utilities.append_to_xlsx_using_list_of_lines(to_append, self.test_write_path)
+
+        new_contents = [l for l in file_utilities.spreadsheet_keyvalue_generator(self.test_write_path)]
+
+        self.assertEqual(new_contents[:2], new_contents[-2:])
+        self.assertEqual(new_contents[1], new_contents[-1])
+
 
 class TestFileMovesAndAlias(unittest.TestCase):
     def setUp(self):
