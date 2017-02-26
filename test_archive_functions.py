@@ -45,6 +45,11 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertIn(expected_file_name, expected_line['filename'])
 
 
+    def test_one_line_insert(self):
+        self.assertFalse('Have tested one line imports both virgin and post-virgin')
+
+
+
     def test_importing_from_archive_works(self):
         self.assertFalse(True)
 
@@ -53,12 +58,7 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         self.assertFalse(True)
 
 
-    def test_one_line_insert(self):
-        self.assertFalse('Have tested one line imports both virgin and post-virgin')
 
-
-    def test_one_line_insert(self):
-        self.assertFalse('Have tested one line imports both virgin and post-virgin')
 
 
 
