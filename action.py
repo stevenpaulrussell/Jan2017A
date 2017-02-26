@@ -63,6 +63,7 @@ def add_to_build_history(build_line, connect):
             raise cursors.CommanderException(cmdr.history)
 
 
+
 def get_current_tableset(connect):
     return cursors.Commander(connect=connect).tableset
 
