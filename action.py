@@ -50,7 +50,7 @@ def import_line_at_a_time(work, insert_cmd, connect):
         else:
             work.failure(cmdr.history)
             break
-        work.done()
+    work.done()
     return cmdr.success, cmdr.history
 
 

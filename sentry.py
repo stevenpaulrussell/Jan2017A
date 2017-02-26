@@ -72,9 +72,9 @@ class Whole_Spreadsheet_Imports(General_Imports):
         self.commit = 'group'
 
     def success(self, *args):
-        archive_directory_name = 'archive_directory/{}'.format(self.table_name)
-        archive_directory_path = file_utilities.get_path_from_alias(archive_directory_name)
-        file_utilities.copy_file_path_to_dir(self.file_path, archive_directory_path)
+        archive_directory_path = file_utilities.get_path_from_alias('archive_directory')
+        archive_table_path = os.path.join(archive_directory_path, self.table_name)
+        file_utilities.copy_file_path_to_dir(self.file_path, archive_table_path)
         os.remove(self.file_path)
         self.append_import_to_archive_import_locator()
 
@@ -125,9 +125,10 @@ class Line_At_A_Time_Imports(General_Imports):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
 
     def update_archive_file(self):
-        archive_directory_name = 'archive_directory/{}'.format(self.table_name)
-        archive_directory_path = file_utilities.get_path_from_alias(archive_directory_name)
-        archive_file_path = os.path.join(archive_directory_path, self.file_name)
+        archive_directory_path = file_utilities.get_path_from_alias('archive_directory')
+        archive_table_path = os.path.join(archive_directory_path, self.table_name)
+        file_utilities.copy_file_path_to_dir(self.file_path, archive_table_path)
+        archive_file_path = os.path.join(archive_table_path, self.file_name)
         if file_utilities.append_to_xlsx_using_list_of_lines(self.newly_imported_lines, archive_file_path):
             self.append_import_to_archive_import_locator()
 
