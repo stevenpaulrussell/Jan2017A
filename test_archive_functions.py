@@ -39,19 +39,20 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         apath = file_utilities.get_path_from_alias('person_table_example')
         expected_file_name = os.path.split(apath)[-1]
         expected_line = next(file_utilities.spreadsheet_keyvalue_generator(archive_import_locator_path))
-
+        self.assertIn(expected_file_name, expected_line['filename'])
 
     def xtest_one_line_insert(self):
         self.assertFalse('Have tested one line imports both virgin and post-virgin')
 
-
-
     def xtest_importing_from_archive_works(self):
         self.assertFalse(True)
 
+    def test_archive_integrity_check_works_no_error(self):
+        sentry.poll_imports()
+        action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        errors = action.archive_integrity_check()
+        self.assertFalse(errors)
 
-    def xtest_archive_integrity_check_works(self):
-        self.assertFalse(True)
 
 
 class CanProperlyHandleTESTTableImports(unittest.TestCase):
