@@ -61,8 +61,6 @@ def add_to_build_history(build_line, connect):
             cmdr.do_cmd(insert_cmd, build_line)
         if not cmdr.success:
             raise cursors.CommanderException(cmdr.history)
-    else:
-        print('debug in action.add_to_build_history, not adding to build because not build_line... is TEST ONLY?')
 
 
 def get_current_tableset(connect):

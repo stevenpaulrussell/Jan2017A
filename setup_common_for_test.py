@@ -16,6 +16,7 @@ CLEANS = ('sql_reports_directory',
           'import whole person directory',
           'import lines person directory',
           'import person test directory',
+          'archive_directory',
           )
 
 def clean_directories(verbose=False):
