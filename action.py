@@ -33,8 +33,8 @@ def import_whole_sheet(work, insert_cmd, connect):
             one_line.update(work.command_keys)
             cmdr.do_cmd(insert_cmd, one_line)
     if cmdr.success:
-        add_to_build_history(work.build_line, connect=connect)
         work.success(cmdr.history)
+        add_to_build_history(work.build_line, connect=connect)
     else:
         work.failure(cmdr.history)
     return cmdr.success, cmdr.history
@@ -55,12 +55,14 @@ def import_line_at_a_time(work, insert_cmd, connect):
 
 
 def add_to_build_history(build_line, connect):
-    insert_cmd = sql_command_library.read_db_insertion_commands()[BUILD_HISTORY_TABLE]
-    with cursors.Commander(connect, commit='group') as cmdr:
-        cmdr.do_cmd(insert_cmd, build_line)
-    if not cmdr.success:
-        raise cursors.CommanderException(cmdr.history)
-    return
+    if build_line:
+        insert_cmd = sql_command_library.read_db_insertion_commands()[BUILD_HISTORY_TABLE]
+        with cursors.Commander(connect, commit='group') as cmdr:
+            cmdr.do_cmd(insert_cmd, build_line)
+        if not cmdr.success:
+            raise cursors.CommanderException(cmdr.history)
+    else:
+        print('debug in action.add_to_build_history, not adding to build because not build_line... is TEST ONLY?')
 
 
 def get_current_tableset(connect):

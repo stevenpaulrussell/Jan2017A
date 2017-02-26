@@ -64,7 +64,6 @@ class General_Imports(object):
         return {'error': short_error, 'error_detail': error_detail}
 
 
-
 class Whole_Spreadsheet_Imports(General_Imports):
     def __init__(self, import_directory, file_name, work_spec):
         super(Whole_Spreadsheet_Imports, self).__init__(import_directory, file_name, work_spec)
@@ -87,6 +86,7 @@ class Test_Only_Spreadsheet_Imports(Whole_Spreadsheet_Imports):
     def __init__(self, import_directory, file_name, work_spec):
         super(Test_Only_Spreadsheet_Imports, self).__init__(import_directory, file_name, work_spec)
         self.commit = False
+        self.build_line = None
 
     def success(self, history):
         success_path = os.path.join(self.import_directory, 'SuCcEsS_{}'.format(self.file_name))
