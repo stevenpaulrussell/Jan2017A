@@ -125,6 +125,8 @@ class Line_At_A_Time_Imports(General_Imports):
         file_utilities.write_to_xlsx_using_gen_of_dicts_as_source((l for l in remaining), self.file_path)
 
     def update_archive_file(self):
+        if not self.newly_imported_lines:
+            return
         archive_directory_path = file_utilities.get_path_from_alias('archive_directory')
         archive_table_path = os.path.join(archive_directory_path, self.table_name)
         archive_file_path = os.path.join(archive_table_path, self.file_name)

@@ -156,9 +156,7 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         action.make_database_views(connect=dataqueda_constants.LOCAL)
         sentry.poll_imports()
         sentry.work_list = []
-        dest_path = file_utilities.get_path_from_alias('import lines person directory')
-        source_path = file_utilities.get_path_from_alias('person_draft_error')
-        file_utilities.copy_file_path_to_dir(source_path, dest_path)
+        self.dest_dir = file_utilities.get_path_from_alias('import lines person directory')
 
     def tearDown(self):
         sentry.poll_imports()
@@ -166,6 +164,11 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         setup_common_for_test.clean_directories()
 
     def test_can_find_and_import_tables_by_line(self):
+        source_path = file_utilities.get_path_from_alias('person_draft_error')
+        source_name = os.path.split(source_path)[-1]
+        dest_path = os.path.join(self.dest_dir, source_name)
+        file_utilities.copy_file_path_to_dir(source_path, self.dest_dir)
+        import_path = os.path.join(self.dest_dir, )
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         sentry.poll_imports()
         self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
@@ -175,8 +178,16 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         self.assertTrue(error_msg)
         self.assertEqual(len(vars), 1)
         self.assertIn('last', vars[0])
+        self.assertTrue(os.path.exists(dest_path))
+
+        self.assertEqual(sentry.work_list, [])  # Verify all clear after work done!
+        sentry.poll_imports()
+        self.assertTrue(len(sentry.work_list) == 0)  # Verify no more to be done!
+
 
     def test_keywords_source_file_and_author_are_available_for_tables(self):
+        source_path = file_utilities.get_path_from_alias('person_draft_error')
+        file_utilities.copy_file_path_to_dir(source_path, self.dest_dir)
         self.assertEqual(sentry.work_list, [])  # Verify all clear!
         sentry.poll_imports()
         self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
@@ -187,6 +198,82 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         self.assertIn('author', vars[0])
         self.assertIn('tania', vars[0]['author'])
 
+    def test_does_xls_to_xlsx_translation(self):
+        source_path = file_utilities.get_path_from_alias('person_xls')
+        dest_path = os.path.join(self.dest_dir, os.path.split(source_path)[-1])
+        re_written_path = '{}.xlsx'.format(os.path.splitext(dest_path)[0])
+        print(re_written_path)
+        file_utilities.copy_file_path_to_dir(source_path, self.dest_dir)
+        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        sentry.poll_imports()
+        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        (cmd, vars), error_msg = history[0]
+        self.assertTrue(success)
+        self.assertFalse(error_msg)
+        self.assertEqual(len(vars), 1)
+        self.assertIn('last', vars[0])
+        self.assertFalse(os.path.exists(dest_path))
+        self.assertTrue(os.path.exists(re_written_path))
+        transformed_import_file = [line for line in file_utilities.spreadsheet_keyvalue_generator(re_written_path)]
+        self.assertEqual(len(transformed_import_file), 1)
+        self.assertFalse(any(transformed_import_file[0].values()))
+
+        return
+
+        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        sentry.poll_imports()
+        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        (cmd, vars), error_msg = history[0]
+        self.assertTrue(success)
+        self.assertFalse(error_msg)
+        self.assertEqual(len(vars), 1)
+        self.assertIn('last', vars[0])
+
+    def test_handles_empty_imports(self):
+        source_path = file_utilities.get_path_from_alias('person_blank')
+        source_name = os.path.split(source_path)[-1]
+        dest_path = os.path.join(self.dest_dir, source_name)
+        file_utilities.copy_file_path_to_dir(source_path, self.dest_dir)
+        import_path = os.path.join(self.dest_dir, )
+        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        sentry.poll_imports()
+        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        (cmd, vars), error_msg = history[0]
+        self.assertFalse(success)
+        self.assertTrue(error_msg)
+        self.assertEqual(len(vars), 1)
+        self.assertIn('last', vars[0])
+        self.assertTrue(os.path.exists(dest_path))
+
+        self.assertEqual(sentry.work_list, [])  # Verify all clear after work done!
+        sentry.poll_imports()
+        self.assertTrue(len(sentry.work_list) == 0)  # Verify no more to be done!
+
+
+
+
+
+
+    def test_handles_perfect_imports_ok(self):
+        source_path = file_utilities.get_path_from_alias('person_table_example')
+        dest_path = os.path.join(self.dest_dir, os.path.split(source_path)[-1])
+        file_utilities.copy_file_path_to_dir(source_path, self.dest_dir)
+        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        sentry.poll_imports()
+        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
+        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
+        (cmd, vars), error_msg = history[0]
+        self.assertTrue(success)
+        self.assertFalse(error_msg)
+        self.assertEqual(len(vars), 1)
+        self.assertIn('last', vars[0])
+        self.assertTrue(os.path.exists(dest_path))
+        transformed_import_file = [line for line in file_utilities.spreadsheet_keyvalue_generator(dest_path)]
+        self.assertEqual(len(transformed_import_file), 1)
+        self.assertFalse(any(transformed_import_file[0].values()))
 
 class Test_Actions_Can_Destroy_And_Create_DB(unittest.TestCase):
     def setUp(self):
