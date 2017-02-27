@@ -106,11 +106,11 @@ def spreadsheet_keyvalue_generator(spreadsheet_path):
 
 
 def write_to_xlsx_using_gen_of_dicts_as_source(gen_of_dicts, dest_file_path, xls_to_xlsx=True):
-    # path, ext = os.path.splitext(dest_file_path)
-    # if ext in ('.xls', '.xlsx') and xls_to_xlsx:
-    #     dest_file_path = '{}.xlsx'.format(path)
-    # else:
-    #     raise FileMovesSurprise('Seeing file name "{}" and xls_to_xlsx "{}"'.format(dest_file_path, xls_to_xlsx))
+    path, ext = os.path.splitext(dest_file_path)
+    if ext in ('.xls', '.xlsx') and xls_to_xlsx:
+        dest_file_path = '{}.xlsx'.format(path)
+    else:
+        raise FileMovesSurprise('Seeing file name "{}" and xls_to_xlsx "{}"'.format(dest_file_path, xls_to_xlsx))
     workbook = xlsxwriter.Workbook(dest_file_path)
     centerwrapformat = workbook.add_format({'text_wrap': True, 'center_across': True})
     worksheet = workbook.add_worksheet()
