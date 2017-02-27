@@ -41,10 +41,16 @@ class CanProperlyHandleWholeTableImports(unittest.TestCase):
         expected_line = next(file_utilities.spreadsheet_keyvalue_generator(archive_import_locator_path))
         self.assertIn(expected_file_name, expected_line['filename'])
 
-    def xtest_one_line_insert(self):
+    def test_one_line_insert(self):
         self.assertFalse('Have tested one line imports both virgin and post-virgin')
 
-    def xtest_importing_from_archive_works(self):
+
+
+
+
+
+
+    def test_importing_from_archive_works(self):
         self.assertFalse(True)
 
 
