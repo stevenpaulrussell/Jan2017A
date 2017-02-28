@@ -198,7 +198,7 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         self.assertIn('author', vars[0])
         self.assertIn('tania', vars[0]['author'])
 
-    def test_does_xls_to_xlsx_translation(self):
+    def test_does_xls_to_xlsx_translation_and_file_change_does_not_trigger_work(self):
         source_path = file_utilities.get_path_from_alias('person_xls')
         dest_path = os.path.join(self.dest_dir, os.path.split(source_path)[-1])
         re_written_path = '{}.xlsx'.format(os.path.splitext(dest_path)[0])
@@ -219,17 +219,10 @@ class CanProperlyHandle_By_Line_TableImportsWithErrorsInImports(unittest.TestCas
         self.assertEqual(len(transformed_import_file), 1)
         self.assertFalse(any(transformed_import_file[0].values()))
 
-        return
-
-        self.assertEqual(sentry.work_list, [])  # Verify all clear!
+        self.assertEqual(sentry.work_list, [])  # Work was done
         sentry.poll_imports()
-        self.assertTrue(len(sentry.work_list) == 1)  # Verify all ok with sentry.  Really, this is not part of action!
-        success, history = action.do_a_work_item(connect=dataqueda_constants.LOCAL)
-        (cmd, vars), error_msg = history[0]
-        self.assertTrue(success)
-        self.assertFalse(error_msg)
-        self.assertEqual(len(vars), 1)
-        self.assertIn('last', vars[0])
+        self.assertEqual(sentry.work_list, [])  # File change does not trigger re-work of same file!
+
 
     def test_handles_empty_imports(self):
         source_path = file_utilities.get_path_from_alias('person_blank')

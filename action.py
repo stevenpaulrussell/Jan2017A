@@ -13,9 +13,8 @@ class ActionException(Exception):
 
 
 def do_a_work_item(connect):
-    sentry.poll_imports()
-    if sentry.work_list:
-        work = sentry.work_list.pop(0)
+    if poll_and_check_for_work():
+        work = sentry.work_list.pop()
         try:
             work_spec = {'import whole': import_whole_sheet, 'import by line': import_line_at_a_time}[work.action]
         except KeyError:
@@ -23,8 +22,19 @@ def do_a_work_item(connect):
         else:
             insert_cmd = sql_command_library.read_db_insertion_commands()[work.table_name]
             success, history = work_spec(work, insert_cmd, connect)
-            sentry.poll_imports()   # Because the contents of directories may have changed
+            new_work = poll_and_check_for_work()
+            if new_work:
+                worked_file_name = os.path.splitext(work.file_name)[0]
+                new_work_file_name = os.path.splitext(new_work.file_name)[0]
+                if worked_file_name == new_work_file_name:
+                    sentry.work_list.pop()
             return success, history
+
+
+def poll_and_check_for_work():
+    sentry.poll_imports()
+    if sentry.work_list:
+        return sentry.work_list[-1]
 
 
 def import_whole_sheet(work, insert_cmd, connect):
